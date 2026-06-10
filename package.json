@@ -1,0 +1,39 @@
+{
+  "name": "clone1942-tooling",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Thin npm shim over the Gradle task surface. Canonical commands live in build.gradle.kts; these just call ./gradlew. Prefer `./gradlew <task>`.",
+  "scripts": {
+    "play:jvm": "./gradlew playJvm",
+    "play:web": "./gradlew playWeb",
+    "play:web:headless": "./gradlew playWebHeadless",
+    "play:wasm": "./gradlew playWasm",
+    "play:wasm:headless": "./gradlew playWasmHeadless",
+    "play:android": "./gradlew playAndroid",
+    "play:native": "./gradlew playNative",
+
+    "launch:jvm": "./gradlew playJvm",
+    "launch:web": "./gradlew playWeb",
+    "launch:wasm": "./gradlew playWasm",
+    "launch:android": "./gradlew playAndroid",
+
+    "test:jvm": "./gradlew testJvm",
+    "test:web": "./gradlew testWeb",
+    "test:wasm": "./gradlew testWasm",
+    "test:android": "./gradlew testAndroid",
+    "test:all": "./gradlew testAll",
+
+    "web:console": "./gradlew webConsole",
+    "git:tidy": "./gradlew gitTidy",
+    "kill:servers": "./gradlew killServers",
+    "pr:create": "./gradlew prCreate",
+
+    "release:check-git": "./gradlew releaseCheckGit",
+    "release:test": "./gradlew releaseTest",
+    "release:build": "./gradlew releaseBuild",
+    "release:version": "./gradlew releaseVersion",
+    "release:branch": "./gradlew releaseBranch",
+    "release:tag": "./gradlew releaseTag",
+    "release:all": "./gradlew release"
+  }
+}

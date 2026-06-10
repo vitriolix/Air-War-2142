@@ -1,0 +1,9 @@
+{
+  "name": "web-console",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Headless Playwright streamer that pipes the web build's browser console + errors to the terminal.",
+  "dependencies": {
+    "playwright": "1.60.0"
+  }
+}

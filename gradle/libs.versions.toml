@@ -1,0 +1,6 @@
+[versions]
+korge = "6.0.0"
+kotlin = "2.0.21"
+
+[plugins]
+korge = { id = "com.soywiz.korge", version.ref = "korge" }

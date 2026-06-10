@@ -1,0 +1,27 @@
+# Gradle / Kotlin build caches
+.gradle/
+.kotlin/
+**/build/
+/captures
+.externalNativeBuild
+.cxx
+
+# IDE
+*.iml
+/.idea/
+
+# macOS
+.DS_Store
+
+# Local / machine-specific
+local.properties
+*.jks
+*.keystore
+
+# JS tooling (Playwright streamer deps, etc.)
+node_modules/
+
+# Note: kotlin-js-store/yarn.lock IS committed on purpose (it locks JS deps).
+
+# Claude Code local settings (per-user, not shared)
+.claude/settings.local.json
