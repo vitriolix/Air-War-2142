@@ -60,6 +60,7 @@ tasks.register<Exec>("webConsole")  { description = "Boot the web build and stre
 tasks.register<Exec>("gitTidy")     { description = "Verify a clean git working tree + push state."; runScript("scripts/git-tidy.sh") }
 tasks.register<Exec>("killServers") { description = "Stop the JS/Wasm dev servers and runJvm.";      runScript("scripts/kill-servers.sh") }
 tasks.register<Exec>("prCreate")    { description = "Push the current branch and open a GitHub PR (gh)."; runScript("scripts/pr-create.sh") }
+tasks.register<Exec>("prOpen")      { description = "Open the current branch's GitHub PR page in the browser (gh)."; runScript("scripts/pr-open.sh") }
 
 // --- Release prep (each step standalone) -----------------------------------------
 tasks.register<Exec>("releaseCheckGit") { description = "Release: ensure git is tidy.";        runScript("scripts/git-tidy.sh") }
