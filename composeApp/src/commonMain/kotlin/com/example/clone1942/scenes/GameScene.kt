@@ -13,6 +13,8 @@ import korlibs.korge.view.*
 import korlibs.math.geom.Angle
 import korlibs.math.geom.Point
 import com.example.clone1942.CANVAS_HEIGHT
+import com.example.clone1942.ecs.Particle
+import com.example.clone1942.ecs.Position
 import com.example.clone1942.logic.*
 import com.example.clone1942.render.*
 import kotlin.math.*
@@ -293,20 +295,23 @@ class GameScene(
                     }
                 }
 
-                // ── Particles: pool — scale + colorMul, no tessellation ────────
+                // ── Particles: ECS-driven pool — scale + colorMul, no tessellation ──
                 particlePool.forEach { it.visible = false }
-                engine.particles.forEachIndexed { i, p ->
-                    if (i >= particlePool.size) return@forEachIndexed
+                var partIdx = 0
+                engine.world.store<Particle>().each { e, p ->
+                    if (partIdx >= particlePool.size) return@each
+                    val pos     = engine.world.get<Position>(e) ?: return@each
                     val lifePct = p.currentLife.toFloat() / p.maxLife.toFloat()
                     val alpha   = (lifePct * 255).toInt().coerceIn(0, 255)
                     val base    = argbToRgba(p.color)
                     val radius  = (p.size * (0.5f + lifePct * 0.5f)).toDouble()
-                    particlePool[i].apply {
+                    particlePool[partIdx].apply {
                         visible = true
-                        position(p.x.toDouble(), p.y.toDouble())
+                        position(pos.x.toDouble(), pos.y.toDouble())
                         scaleX = radius; scaleY = radius
                         colorMul = RGBA(base.r, base.g, base.b, alpha)
                     }
+                    partIdx++
                 }
             }
 
@@ -362,7 +367,7 @@ class GameScene(
                 dbgValues[3].text = "${player.fuel.toInt()}%"
                 dbgValues[4].text = "${player.lives}   LOOPS ${player.rollsLeft}"
                 dbgValues[5].text = "${engine.enemies.size}   BULLETS ${engine.bullets.size}"
-                dbgValues[6].text = "${engine.particles.size}"
+                dbgValues[6].text = "${engine.world.store<Particle>().size}"
                 dbgValues[7].text = keyStr
                 dbgValues[8].text = engine.controlMode.value.name
                 dbgValues[7].colorMul = Colors["#FFCC00"]
