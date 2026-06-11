@@ -28,4 +28,7 @@ tasks.register<JavaExec>("bakeAtlas") {
     dependsOn(jvmMainComp.compileTaskProvider)
     classpath = files(jvmMainComp.output.allOutputs, jvmMainComp.runtimeDependencyFiles)
     mainClass.set("com.example.clone1942.bake.BakeAtlasKt")
+    val resDir = layout.projectDirectory.dir("src/commonMain/resources")
+    args(resDir.asFile.absolutePath)
+    outputs.dir(resDir)
 }

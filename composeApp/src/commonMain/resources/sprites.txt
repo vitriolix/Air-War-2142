@@ -1,0 +1,13 @@
+player_normal 2 2 270 314 135 150
+player_escorts 2 320 594 314 297 150
+player_roll 276 2 270 285 135 150
+enemy_scout 550 2 342 195 171 114
+enemy_diver 896 2 420 225 210 131
+enemy_squadron_red 1320 2 324 191 162 109
+enemy_heavy_fighter 1648 2 360 276 180 144
+enemy_boss 600 231 750 486 375 243
+bullet_player 550 201 24 84 12 42
+bullet_enemy 1354 197 48 48 24 24
+island 1354 282 615 615 315 315
+cloud 2 638 567 300 297 150
+powerup 573 721 150 150 75 75

@@ -66,6 +66,21 @@ internal fun ShapeBuilder.drawCloudCentered(cloud: BackgroundCloud) {
 
 // ── Power-ups ─────────────────────────────────────────────────────────────────
 
+// Single power-up centered at origin (bake target). The batch version below draws
+// each live power-up at its world position and is still used by the runtime until
+// power-ups migrate to atlas sprites.
+internal fun ShapeBuilder.drawPowerupCentered(w: Double, h: Double) {
+    fill(RGBA(0, 20, 40, 200))  { roundRect(-w/2, -h/2, w, h, 10.0, 10.0) }
+    fill(RGBA(0, 229, 255, 80)) { circle(0.0, 0.0, w * 0.32) }
+    fill(Colors["#00FFFF"])     { circle(0.0, 0.0, w * 0.14) }
+    fill(Colors["#00E5FF"]) {
+        roundRect(-w/2,       -h/2,       w,   3.0, 1.0, 1.0)
+        roundRect(-w/2,        h/2 - 3.0, w,   3.0, 1.0, 1.0)
+        roundRect(-w/2,       -h/2,        3.0, h,   1.0, 1.0)
+        roundRect( w/2 - 3.0, -h/2,        3.0, h,   1.0, 1.0)
+    }
+}
+
 internal fun ShapeBuilder.drawPowerupsCentered(engine: GameEngine) {
     engine.powerUps.forEach { pu ->
         val x = pu.x.toDouble(); val y = pu.y.toDouble()
