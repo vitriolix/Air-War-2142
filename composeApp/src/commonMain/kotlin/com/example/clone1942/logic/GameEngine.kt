@@ -1,6 +1,7 @@
 package com.example.clone1942.logic
 
 import com.example.clone1942.CANVAS_HEIGHT
+import com.example.clone1942.ecs.*
 import com.example.clone1942.interfaces.SoundPlayer
 import com.example.clone1942.interfaces.SensorInput
 import kotlin.random.Random
@@ -75,17 +76,6 @@ data class PowerUp(
     var height: Float = 50f
 )
 
-data class Particle(
-    var x: Float,
-    var y: Float,
-    var vx: Float,
-    var vy: Float,
-    var size: Float,
-    var color: Int, // RGB hex representation
-    var maxLife: Int,
-    var currentLife: Int
-)
-
 data class BackgroundIsland(
     var x: Float,
     var y: Float,
@@ -127,7 +117,12 @@ class GameEngine(
     val enemies = mutableListOf<Enemy>()
     val bullets = mutableListOf<Bullet>()
     val powerUps = mutableListOf<PowerUp>()
-    val particles = mutableListOf<Particle>()
+
+    // ECS world — particles live here (first migrated subsystem; see docs/0001).
+    val world = World().apply {
+        addSystem(MovementSystem())
+        addSystem(ParticleSystem())
+    }
     val islands = mutableListOf<BackgroundIsland>()
     val clouds = mutableListOf<BackgroundCloud>()
 
@@ -212,7 +207,7 @@ class GameEngine(
         enemies.clear()
         bullets.clear()
         powerUps.clear()
-        particles.clear()
+        world.clear()
         level = 1
         kills = 0
         tickCount = 0
@@ -280,7 +275,7 @@ class GameEngine(
         updateEnemies()
         updateBullets()
         updatePowerups()
-        updateParticles()
+        world.update(1f)   // ECS: MovementSystem + ParticleSystem (was updateParticles())
         checkCollisions()
         spawnEnemiesWave()
     }
@@ -428,7 +423,7 @@ class GameEngine(
         }
 
         // Add visual propulsion spark at exhaust
-        particles.add(Particle(p.x, p.y + p.height / 2f, 0f, 5f, 6f, 0xFFFFAA00.toInt(), 5, 0))
+        spawnParticle(p.x, p.y + p.height / 2f, 0f, 5f, 6f, 0xFFFFAA00.toInt(), 5)
 
         if (sfxEnabled) soundPlayer.playShoot()
     }
@@ -484,10 +479,10 @@ class GameEngine(
 
             // Engine visual smoke particle for heavy enemy and boss
             if (e.type == EnemyType.HEAVY_FIGHTER && tickCount % 5 == 0L) {
-                particles.add(Particle(e.x, e.y - 30f, 0f, -2f, 8f, 0xFF777777.toInt(), 20, 0))
+                spawnParticle(e.x, e.y - 30f, 0f, -2f, 8f, 0xFF777777.toInt(), 20)
             } else if (e.type == EnemyType.BOSS && tickCount % 3 == 0L) {
-                particles.add(Particle(e.x - 70f, e.y - 50f, 0f, -2f, 12f, 0xFF444444.toInt(), 30, 0))
-                particles.add(Particle(e.x + 70f, e.y - 50f, 0f, -2f, 12f, 0xFF444444.toInt(), 30, 0))
+                spawnParticle(e.x - 70f, e.y - 50f, 0f, -2f, 12f, 0xFF444444.toInt(), 30)
+                spawnParticle(e.x + 70f, e.y - 50f, 0f, -2f, 12f, 0xFF444444.toInt(), 30)
             }
         }
 
@@ -522,13 +517,13 @@ class GameEngine(
         powerUps.removeAll { p -> p.y > playHeight + 50f }
     }
 
-    private fun updateParticles() {
-        particles.forEach { p ->
-            p.x += p.vx
-            p.y += p.vy
-            p.currentLife++
-        }
-        particles.removeAll { p -> p.currentLife >= p.maxLife }
+    // Spawn a particle as an ECS entity (Position + Velocity + Particle). Movement +
+    // aging are handled by MovementSystem/ParticleSystem on world.update().
+    fun spawnParticle(x: Float, y: Float, vx: Float, vy: Float, size: Float, color: Int, maxLife: Int) {
+        val e = world.create()
+        world.add(e, Position(x, y))
+        world.add(e, Velocity(vx, vy))
+        world.add(e, Particle(size, color, maxLife, 0))
     }
 
     private fun checkCollisions() {
@@ -554,17 +549,14 @@ class GameEngine(
             enemy.health -= damage
             // Spawn spark particles on hit
             for (i in 1..4) {
-                particles.add(
-                    Particle(
-                        x = enemy.x,
-                        y = enemy.y,
-                        vx = (rand.nextFloat() - 0.5f) * 8f,
-                        vy = (rand.nextFloat() - 0.5f) * 8f,
-                        size = 4f + rand.nextFloat() * 4f,
-                        color = 0xFFFFFF00.toInt(), // yellow sparks
-                        maxLife = 10 + rand.nextInt(10),
-                        currentLife = 0
-                    )
+                spawnParticle(
+                    x = enemy.x,
+                    y = enemy.y,
+                    vx = (rand.nextFloat() - 0.5f) * 8f,
+                    vy = (rand.nextFloat() - 0.5f) * 8f,
+                    size = 4f + rand.nextFloat() * 4f,
+                    color = 0xFFFFFF00.toInt(), // yellow sparks
+                    maxLife = 10 + rand.nextInt(10)
                 )
             }
 
@@ -645,17 +637,14 @@ class GameEngine(
 
         val colors = listOf(0xFFFF3300.toInt(), 0xFFFF9900.toInt(), 0xFFFFFF00.toInt(), 0xFFFFFFFF.toInt())
         for (i in 1..particleCount) {
-            particles.add(
-                Particle(
-                    x = enemy.x,
-                    y = enemy.y,
-                    vx = (rand.nextFloat() - 0.5f) * 16f,
-                    vy = (rand.nextFloat() - 0.5f) * 16f,
-                    size = 6f + rand.nextFloat() * 12f,
-                    color = colors[rand.nextInt(colors.size)],
-                    maxLife = 20 + rand.nextInt(20),
-                    currentLife = 0
-                )
+            spawnParticle(
+                x = enemy.x,
+                y = enemy.y,
+                vx = (rand.nextFloat() - 0.5f) * 16f,
+                vy = (rand.nextFloat() - 0.5f) * 16f,
+                size = 6f + rand.nextFloat() * 12f,
+                color = colors[rand.nextInt(colors.size)],
+                maxLife = 20 + rand.nextInt(20)
             )
         }
 
@@ -676,17 +665,14 @@ class GameEngine(
         // visual screen shake particles / heavy sparks
         val colors = listOf(0xFFFF4444.toInt(), 0xFFFFAAAA.toInt(), 0xFFFFFFFF.toInt())
         for (i in 1..30) {
-            particles.add(
-                Particle(
-                    x = p.x,
-                    y = p.y,
-                    vx = (rand.nextFloat() - 0.5f) * 20f,
-                    vy = (rand.nextFloat() - 0.5f) * 20f,
-                    size = 8f + rand.nextFloat() * 10f,
-                    color = colors[rand.nextInt(colors.size)],
-                    maxLife = 30 + rand.nextInt(20),
-                    currentLife = 0
-                )
+            spawnParticle(
+                x = p.x,
+                y = p.y,
+                vx = (rand.nextFloat() - 0.5f) * 20f,
+                vy = (rand.nextFloat() - 0.5f) * 20f,
+                size = 8f + rand.nextFloat() * 10f,
+                color = colors[rand.nextInt(colors.size)],
+                maxLife = 30 + rand.nextInt(20)
             )
         }
 
@@ -736,17 +722,14 @@ class GameEngine(
 
         // collection sparkles
         for (i in 1..15) {
-            particles.add(
-                Particle(
-                    x = pu.x,
-                    y = pu.y,
-                    vx = (rand.nextFloat() - 0.5f) * 12f,
-                    vy = (rand.nextFloat() - 0.5f) * 12f,
-                    size = 5f + rand.nextFloat() * 5f,
-                    color = 0xFF00FFFF.toInt(), // Cyan sparkle
-                    maxLife = 15 + rand.nextInt(15),
-                    currentLife = 0
-                )
+            spawnParticle(
+                x = pu.x,
+                y = pu.y,
+                vx = (rand.nextFloat() - 0.5f) * 12f,
+                vy = (rand.nextFloat() - 0.5f) * 12f,
+                size = 5f + rand.nextFloat() * 5f,
+                color = 0xFF00FFFF.toInt(), // Cyan sparkle
+                maxLife = 15 + rand.nextInt(15)
             )
         }
 
