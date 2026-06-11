@@ -35,11 +35,14 @@ class GameScene(
     override suspend fun SContainer.sceneMain() {
         val ch = CANVAS_HEIGHT.toDouble()
 
+        // ── Sprite atlas — build-time baked vectors, drawn as batched Images ──
+        val atlas = SpriteAtlas.load()
+
         // ── Z-layer containers (back → front) ─────────────────────────────────
         val bgContainer       = container { }   // ocean + islands + clouds
-        val powerupGraphics   = graphics { }    // power-ups (tessellated — rare)
+        val powerupContainer  = container { }   // power-up sprite pool
         val enemyContainer    = container { }   // one container per live enemy
-        val bulletContainer   = container { }   // bullet pool
+        val bulletContainer   = container { }   // bullet sprite pool
         val particleContainer = container { }   // particle pool
 
         // ── Ocean gradient — Graphics drawn ONCE, never updated ───────────────
@@ -47,35 +50,44 @@ class GameScene(
             g.updateShape { drawOcean(engine, ch) }
         }
 
-        // ── Island views — Graphics drawn ONCE per island, centered at (0,0) ──
-        val islandGraphics = engine.islands.map { isl ->
-            bgContainer.graphics { }.also { g -> g.updateShape { drawIslandCentered(isl) } }
+        // ── Island sprites — baked at a reference radius, scaled per island ───
+        val islandViews = engine.islands.map { isl ->
+            atlas.image(bgContainer, AtlasSpec.ISLAND).also { img ->
+                val s = (isl.radius.toDouble() / AtlasSpec.ISLAND_REF_RADIUS) * SpriteAtlas.INV_SCALE
+                img.scaleX = s; img.scaleY = s
+            }
         }
 
-        // ── Cloud views — same approach ───────────────────────────────────────
-        val cloudGraphics = engine.clouds.map { cloud ->
-            bgContainer.graphics { }.also { g -> g.updateShape { drawCloudCentered(cloud) } }
+        // ── Cloud sprites — baked at scale 1, scaled per cloud ────────────────
+        val cloudViews = engine.clouds.map { cloud ->
+            atlas.image(bgContainer, AtlasSpec.CLOUD).also { img ->
+                img.scaleX = (cloud.scaleX.toDouble() / AtlasSpec.CLOUD_REF_SCALE) * SpriteAtlas.INV_SCALE
+                img.scaleY = (cloud.scaleY.toDouble() / AtlasSpec.CLOUD_REF_SCALE) * SpriteAtlas.INV_SCALE
+            }
         }
 
-        // ── Player view (tessellated each frame — animated exhaust) ───────────
-        val playerView     = container { }
-        val playerGraphics = playerView.graphics { }
+        // ── Player sprites — 3 baked variants; show one, transform the container ─
+        val playerView       = container { }
+        val playerImgNormal  = atlas.image(playerView, AtlasSpec.PLAYER_NORMAL)
+        val playerImgEscorts = atlas.image(playerView, AtlasSpec.PLAYER_ESCORTS)
+        val playerImgRoll    = atlas.image(playerView, AtlasSpec.PLAYER_ROLL)
+        playerImgEscorts.visible = false
+        playerImgRoll.visible = false
 
         // ── Enemy tracking: enemy.id → (rootContainer, hpFgBar?) ─────────────
         val enemyViews = mutableMapOf<Int, Pair<Container, View?>>()
 
-        // ── Bullet pools — Graphics drawn ONCE per slot ───────────────────────
+        // ── Bullet sprite pools ───────────────────────────────────────────────
         val playerBulletPool = Array(30) {
-            bulletContainer.graphics { }.also { g ->
-                g.updateShape { drawPlayerBulletShape() }
-                g.visible = false
-            }
+            atlas.image(bulletContainer, AtlasSpec.BULLET_PLAYER).also { it.visible = false }
         }
         val enemyBulletPool = Array(50) {
-            bulletContainer.graphics { }.also { g ->
-                g.updateShape { drawEnemyBulletShape() }
-                g.visible = false
-            }
+            atlas.image(bulletContainer, AtlasSpec.BULLET_ENEMY).also { it.visible = false }
+        }
+
+        // ── Power-up sprite pool — baked at a reference size, scaled per pickup ─
+        val powerupPool = Array(8) {
+            atlas.image(powerupContainer, AtlasSpec.POWERUP).also { it.visible = false }
         }
 
         // ── Particle pool — white circle at radius 1, tinted via colorMul ────
@@ -119,9 +131,10 @@ class GameScene(
         var lastLives = Int.MIN_VALUE; var lastFuelPct = Int.MIN_VALUE
         var lastPaused: Boolean? = null
 
-        // Player vector is expensive to tessellate (~8-12ms on web). Only redraw it when
-        // a SHAPE-affecting state changes (escorts on/off, roll start/end); movement, roll
-        // scale/rotation and the invuln blink are all cheap transforms done every frame.
+        // The player has 3 baked sprite variants (normal / escorts / roll). Only swap
+        // which one is visible when a SHAPE-affecting state changes (escorts on/off,
+        // roll start/end); movement, roll squash/rotation and the invuln blink are all
+        // cheap transforms applied to the container every frame.
         var lastPlayerShapeKey: String? = null
 
         // ── Overlay ───────────────────────────────────────────────────────────
@@ -216,16 +229,25 @@ class GameScene(
                 engine.tick()
                 player = engine.player.value   // refresh post-tick so the view has no 1-frame lag
 
-                // ── Background: reposition views, no tessellation ────────────
+                // ── Background: reposition sprites ────────────────────────────
                 engine.islands.forEachIndexed { i, isl ->
-                    islandGraphics[i].position(isl.x.toDouble(), isl.y.toDouble())
+                    islandViews[i].position(isl.x.toDouble(), isl.y.toDouble())
                 }
                 engine.clouds.forEachIndexed { i, cloud ->
-                    cloudGraphics[i].position(cloud.x.toDouble(), cloud.y.toDouble())
+                    cloudViews[i].position(cloud.x.toDouble(), cloud.y.toDouble())
                 }
 
-                // ── Power-ups: tessellated (≤3 simple shapes on screen) ───────
-                powerupGraphics.updateShape { drawPowerupsCentered(engine) }
+                // ── Power-ups: pool sprites, scale per pickup, hide unused ────
+                powerupPool.forEach { it.visible = false }
+                engine.powerUps.forEachIndexed { i, pu ->
+                    if (i >= powerupPool.size) return@forEachIndexed
+                    val s = (pu.width.toDouble() / AtlasSpec.POWERUP_REF_W) * SpriteAtlas.INV_SCALE
+                    powerupPool[i].apply {
+                        visible = true
+                        position(pu.x.toDouble(), pu.y.toDouble())
+                        scaleX = s; scaleY = s
+                    }
+                }
 
                 // ── Enemies: create on spawn, reposition each frame ────────────
                 val activeIds = engine.enemies.mapTo(HashSet()) { it.id }
@@ -241,8 +263,7 @@ class GameScene(
                         val barW = if (e.type == EnemyType.BOSS) 200.0 else 100.0
                         var hpFg: View? = null
                         val root = enemyContainer.container {
-                            val g = graphics { }
-                            g.updateShape { drawEnemyCentered(e) }
+                            atlas.image(this, AtlasSpec.enemy(e.type))
                             if (needsHpBar) {
                                 solidRect(barW, 8.0, RGBA(50, 50, 50, 200))
                                     .position(-barW / 2, -hh - 14.0)
@@ -289,8 +310,8 @@ class GameScene(
                 }
             }
 
-            // ── Player ── movement/roll/blink are cheap transforms every frame; the
-            // vector is only re-tessellated when its shape actually changes (see above).
+            // ── Player ── movement/roll/blink are cheap transforms every frame; only
+            // the *which-sprite* choice changes when the shape state actually changes.
             playerView.x = player.x.toDouble()
             playerView.y = player.y.toDouble()
             val rollScale = if (player.rollProgress > 0f)
@@ -302,7 +323,10 @@ class GameScene(
             playerView.visible = !blink
             val playerShapeKey = "${player.escortsActive}|${player.rollProgress > 0f}"
             if (playerShapeKey != lastPlayerShapeKey) {
-                playerGraphics.updateShape { drawPlayer(player, engine.debugTickCount) }
+                val rolling = player.rollProgress > 0f
+                playerImgRoll.visible    = rolling
+                playerImgEscorts.visible = !rolling && player.escortsActive
+                playerImgNormal.visible  = !rolling && !player.escortsActive
                 lastPlayerShapeKey = playerShapeKey
             }
 
