@@ -37,6 +37,7 @@ abstract class RenderDocs : DefaultTask() {
           h2 { font-size: 1.5em; border-bottom: 1px solid #d1d9e0; padding-bottom: .3em; }
           h3 { font-size: 1.2em; }
           a { color: #0969da; text-decoration: none; } a:hover { text-decoration: underline; }
+          a:visited { color: #551A8B; }   /* classic browser-default purple for visited links */
           code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 85%;
                  background: #eff1f3; padding: .2em .4em; border-radius: 6px; }
           pre { background: #f6f8fa; padding: 14px 16px; border-radius: 8px; overflow: auto; line-height: 1.45; }
@@ -94,6 +95,10 @@ abstract class RenderDocs : DefaultTask() {
         }.distinctBy { it.canonicalPath }
         if (docs.isEmpty()) throw GradleException("No Markdown docs found (README.md or docs/*.md).")
 
+        // Landing page links resolve here; bare directory links (e.g. README's `docs/`) are
+        // redirected to it since the rendered site has no folder listing to point at.
+        val landing = if (rootReadme.exists()) "README.html" else "index.html"
+
         val entries = StringBuilder()
         for (src in docs) {
             val rel = src.relativeTo(root).path
@@ -101,7 +106,8 @@ abstract class RenderDocs : DefaultTask() {
             val title = titleOf(src) ?: rel
             val outFile = File(out, "$slug.html")
             renderOne(src, outFile, styleFile, title)
-            relink(outFile)                                                  // .md cross-links → rendered .html
+            val srcDir = src.parentFile.relativeTo(root).path                // "" for root, "docs", "scripts"…
+            relink(outFile, srcDir, landing)                                 // .md cross-links → rendered .html
             entries.append("<li><span class=\"f\">${esc(rel)}</span>")
                 .append("<a href=\"$slug.html\"><span class=\"t\">${esc(title)}</span></a>")
                 .append("<p>${esc(blurbOf(src))}</p></li>")
@@ -133,10 +139,23 @@ abstract class RenderDocs : DefaultTask() {
         }
     }
 
-    private fun relink(f: File) {
-        f.writeText(f.readText().replace(Regex("href=\"([^\"#]+)\\.md(#[^\"]*)?\"")) { m ->
-            "href=\"" + m.groupValues[1].replace("/", "-") + ".html" + m.groupValues[2] + "\""
-        })
+    private fun relink(f: File, srcDir: String, landing: String) {
+        var html = f.readText()
+        // .md cross-links → rendered .html. Links are relative to the SOURCE file's dir, so
+        // resolve against srcDir first (a sibling link `0004-x.md` in docs/ → `docs/0004-x.md`),
+        // THEN slugify path→dash to match the flat output filenames (the index `slug`).
+        html = html.replace(Regex("href=\"([^\"#]+)\\.md(#[^\"]*)?\"")) { m ->
+            val resolved = (if (srcDir.isEmpty()) m.groupValues[1] else "$srcDir/${m.groupValues[1]}")
+            val slug = java.nio.file.Paths.get(resolved).normalize().toString()   // collapse ./ and ../
+                .replace(Regex("[/ ]+"), "-")
+            "href=\"$slug.html${m.groupValues[2]}\""
+        }
+        // Relative directory links (e.g. `docs/`) have no rendered target → send to the
+        // landing page. Excludes scheme links (http://…) via the no-colon char class.
+        html = html.replace(Regex("href=\"([^\":#]+)/(#[^\"]*)?\"")) { m ->
+            "href=\"$landing${m.groupValues[2]}\""
+        }
+        f.writeText(html)
     }
 
     private fun open(f: File) {
