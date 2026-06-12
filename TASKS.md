@@ -47,10 +47,10 @@ as a sequence of small, perf-gated PRs, game playable at every merge. See
 
 ## Doing
 
-- [›] **PR #2** — ECS kernel + particle migration (awaiting merge)
 - [›] **PR #4** — native Gradle tooling (`buildSrc`: `prOpen` + `renderDocs`) — green, awaiting merge
 - [›] **PR #5** — project docs: README (+ TASKS link), `TASKS.md`, `CLAUDE.md`
 
 ## Done
 
+- [x] **PR #2** — ECS kernel + particle migration → **merged** (first ECS slice on `main`)
 - [x] **PR #3** — `pr-open` bash helper → closed, superseded by native `prOpen` in #4
