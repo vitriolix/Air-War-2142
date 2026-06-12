@@ -239,3 +239,21 @@ PR-A  target   ▏median ≤3.9 (no regression — particles are a small slice o
 - [ ] JVM run shows **identical** particle behaviour (screenshot evidence).
 - [ ] Perf A/B shows **no regression** vs. baseline (LPM checked).
 - [ ] Squash-merged to `main`; next PR (B) opens fresh.
+
+---
+
+<!-- TASKS:auto START -->
+## Tasks (from TASKS.md)
+
+<!-- Generated from TASKS.md by `./gradlew syncDocTasks` — edit tasks there, not here. -->
+
+- [x] **PR-A** — ECS kernel + migrate particles (PR #2)
+- [ ] **PR-B** — plugin host + turn existing systems into *registered* systems
+- [ ] **PR-C…N** — migrate one subsystem per PR: background → bullets → enemies/spawn → player + input-mapping (lift input layer **intact**) → collision → scoring → power-ups → HUD
+- [x] #3 **Incremental** migration; lift input layer intact; no backward-compat burden
+- [x] #4 Kernel↔plugin boundary; ECS; standard-lib blessed components
+- [ ] #15 **ECS dev-tooling** — entity inspector, system trace/profiler, deterministic replay, per-system toggles; **VM error reporting = hard requirement**
+- [ ] #19 **Deterministic command-log + replay** (elaborates #15's "deterministic replay"; needs its own `docs/` design doc before code — next free number; `0002`–`0004` are taken). Goal: log every player command + (optionally) plugin/system actions so a bug session is byte-reproducible. **Analysis done:** sim is already near-deterministic — seeded `Random(42)` (all RNG routed through it) + fixed-timestep `tick()` (ignores wall-clock `dt`; ECS gets `world.update(1f)`). So a session = **seed + ordered command stream pinned to tick**; replay regenerates all system/particle output, so logging plugin actions is only a *verification* trace, not needed to reproduce. The "commands" = `GameEngine`'s mutation surface: `startGame`/`proceedToNextLevel`/`togglePause`/`returnToMenu`/`setControlMode`, per-frame `updateKeyboardInputs`/`updateTouchTarget` + the tilt read inside `tick()`, `triggerRoll`, and `tick()` itself — funneled in from `GameScene.kt` (updater/touch/keys) + `main.kt` (stage keys). **3 gaps to close:** (1) tilt is read live from the sensor inside the tick → must record per-tick as data; (2) event-driven cmds (roll/pause/touch) need a tick stamp to preserve ordering; (3) cross-platform float math (`sin`/`sqrt`) isn't bit-identical JVM/JS/Wasm → honest guarantee is *same-platform* replay. **Open forks (parked — ask before building):** (a) refactor depth: full sealed `GameCommand` + `engine.dispatch()` *[leaning yes — matches the "command pattern" framing + future plugin/VM kernel boundary; must preserve macOS HeldKey/touch hacks]* vs minimal tap recorder; (b) log scope: commands + cheap per-tick state checksum *[leaning — checksum localizes divergence, perf-safe]* vs commands-only vs full per-system trace *[avoid — perf gate]*; (c) replay form: headless harness/test *[leaning]* vs in-app ghost replay vs recorder+format-only. **Perf gate:** recorder must be off by default + delta-encode (log on change), near-zero cost when disabled; A/B it. Log sink is multiplatform (expect/actual): JVM→file, web→console/download, Android→logcat+files.
+- [x] **PR #2** — ECS kernel + particle migration → **merged** (first ECS slice on `main`)
+
+<!-- TASKS:auto END -->
