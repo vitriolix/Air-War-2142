@@ -24,9 +24,11 @@
     "test:all": "./gradlew testAll",
 
     "web:console": "./gradlew webConsole",
+    "docs": "./gradlew renderDocs",
     "git:tidy": "./gradlew gitTidy",
     "kill:servers": "./gradlew killServers",
     "pr:create": "./gradlew prCreate",
+    "pr:open": "./gradlew prOpen",
 
     "release:check-git": "./gradlew releaseCheckGit",
     "release:test": "./gradlew releaseTest",
