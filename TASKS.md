@@ -47,10 +47,11 @@ as a sequence of small, perf-gated PRs, game playable at every merge. See
 
 ## Doing
 
-- [›] **PR #4** — native Gradle tooling (`buildSrc`: `prOpen` + `renderDocs`) — green, awaiting merge
-- [›] **PR #5** — project docs: README (+ TASKS link), `TASKS.md`, `CLAUDE.md`
+_(nothing in flight — next up: PR-B, plugin host + registered systems)_
 
 ## Done
 
 - [x] **PR #2** — ECS kernel + particle migration → **merged** (first ECS slice on `main`)
 - [x] **PR #3** — `pr-open` bash helper → closed, superseded by native `prOpen` in #4
+- [x] **PR #4** — native Gradle tooling (`buildSrc`: `prOpen` + `renderDocs`) → **merged**
+- [x] **PR #5** — project docs (README, TASKS, CLAUDE) → **merged**
