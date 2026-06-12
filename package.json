@@ -25,6 +25,8 @@
 
     "web:console": "./gradlew webConsole",
     "docs": "./gradlew renderDocs",
+    "sync:tasks": "./gradlew syncDocTasks",
+    "docs:api": "./gradlew renderApiDocs",
     "git:tidy": "./gradlew gitTidy",
     "kill:servers": "./gradlew killServers",
     "pr:create": "./gradlew prCreate",
