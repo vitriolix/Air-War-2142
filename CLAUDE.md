@@ -22,7 +22,8 @@
 ## Pointers (durable context — the in-session task list is ephemeral)
 
 - **Task board:** read `TASKS.md` (project root) when planning or resuming feature work;
-  update it (`[ ]`→`[x]`) as things land.
+  update it (`[ ]`→`[x]`) as things land. **Mark an item done as soon as its PR branch is
+  closed — merged _or_ superseded** (a closed branch means that line of work is resolved).
 - **Architecture:** plugin/ECS re-architecture — decisions in the `plugin-architecture`
   memory and `docs/0001`. Read before touching engine/render code.
 - **README:** task reference, build notes, and the full workarounds list.
