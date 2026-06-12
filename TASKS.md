@@ -39,7 +39,7 @@ as a sequence of small, perf-gated PRs, game playable at every merge. See
 
 ## Constraints & workstreams
 
-- [ ] #14 **Perf gate** — every migration step must not regress vs measured baseline (web median 3.9ms / p95 7.3ms). Keep render batching/pooling; allocation-free hot paths; typed component storage. Check Low Power Mode first.
+- ⚙️ **Perf gate** *(always-on constraint — enforced as a hard rule in `CLAUDE.md`, not a checkbox)* — no migration step may regress base-game frame time vs the measured baseline (web median 3.9ms / p95 7.3ms). A/B each step; keep render batching/pooling; allocation-free hot paths; typed component storage; check Low Power Mode before measuring.
 - [ ] #15 **ECS dev-tooling** — entity inspector, system trace/profiler, deterministic replay, per-system toggles; **VM error reporting = hard requirement**
 - [ ] #16 Interpreter tech stack (reference) — antlr-kotlin (Wasm-proven parse) + hand-rolled tree-walker; luak/TENUM refs
 - [~] #17 Plugin "store"/registry — deferred (much later); iOS App Store 2.5.2 means curated bundled-only there
