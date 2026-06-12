@@ -40,6 +40,7 @@ Design docs live in [`docs/`](docs/) — numbered, ADR-style (what's changing, w
 
 | Doc | About |
 |---|---|
+| [TASKS.md](TASKS.md) | Roadmap & task board — current status, what's next, and in-flight PRs |
 | [0001 — ECS Kernel & Core Migration](docs/0001-ecs-kernel-and-core-migration.md) | Incremental migration to an ECS/plugin engine; first slice = kernel + particle migration |
 | [scripts/README.md](scripts/README.md) | Task-command reference |
 
