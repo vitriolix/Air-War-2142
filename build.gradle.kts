@@ -64,12 +64,12 @@ tasks.register<SyncDocTasks>("syncDocTasks") { group = gameGroup; description = 
 tasks.register<SyncDocTasks>("checkDocTasks") { group = gameGroup; description = "Backstop: fail if any doc's Tasks block is out of sync with TASKS.md. Run by tidyGit/releaseCheckGit."; check.set(true) }
 tasks.register<Exec>("installGitHooks") { group = gameGroup; description = "Point git at the committed hooks (scripts/hooks) — auto-syncs doc task blocks on commit."; workingDir = rootDir; commandLine("git", "config", "core.hooksPath", "scripts/hooks") }
 tasks.register("renderApiDocs") { group = gameGroup; description = "Render the Kotlin API reference (Dokka HTML) → build/api/index.html. Pairs with renderDocs."; dependsOn(":composeApp:dokkaHtml") }
-tasks.register<Exec>("tidyGit")     { description = "Verify a clean git working tree + push state."; dependsOn("checkDocTasks"); runScript("scripts/git-tidy.sh") }
+tasks.register<Exec>("tidyGit")     { description = "Verify a clean git working tree + push state."; dependsOn("checkDocTasks"); runScript("scripts/tidy-git.sh") }
 tasks.register<Exec>("killServers") { description = "Stop the JS/Wasm dev servers and runJvm.";      runScript("scripts/kill-servers.sh") }
-tasks.register<Exec>("createPr")    { description = "Push the current branch and open a GitHub PR (gh)."; runScript("scripts/pr-create.sh") }
+tasks.register<Exec>("createPr")    { description = "Push the current branch and open a GitHub PR (gh)."; runScript("scripts/create-pr.sh") }
 
 // --- Release prep (each step standalone) -----------------------------------------
-tasks.register<Exec>("releaseCheckGit") { description = "Release: ensure git is tidy.";        dependsOn("checkDocTasks"); runScript("scripts/git-tidy.sh") }
+tasks.register<Exec>("releaseCheckGit") { description = "Release: ensure git is tidy.";        dependsOn("checkDocTasks"); runScript("scripts/tidy-git.sh") }
 tasks.register("releaseTest")           { group = gameGroup; description = "Release: run all tests."; dependsOn(":composeApp:allTests") }
 tasks.register("releaseBuild") {
     group = gameGroup; description = "Release: build JVM jar + web prod bundle + Android release APK."
