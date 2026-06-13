@@ -58,6 +58,6 @@ as a sequence of small, perf-gated PRs, game playable at every merge. See
 ## Done
 
 - [x] **PR #2** — ECS kernel + particle migration → **merged** (first ECS slice on `main`) <!-- docs:0001 -->
-- [x] **PR #3** — `pr-open` bash helper → closed, superseded by native `prOpen` in #4
-- [x] **PR #4** — native Gradle tooling (`buildSrc`: `prOpen` + `renderDocs`) → **merged** <!-- docs:0004 -->
+- [x] **PR #3** — `pr-open` bash helper → closed, superseded by native `openPr` in #4
+- [x] **PR #4** — native Gradle tooling (`buildSrc`: `openPr` + `renderDocs`) → **merged** <!-- docs:0004 -->
 - [x] **PR #5** — project docs (README, TASKS, CLAUDE) → **merged**

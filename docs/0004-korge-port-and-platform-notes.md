@@ -258,9 +258,9 @@ focus → false results); there's no `timeout` on this Mac, so run in background
 
 Canonical commands are **Gradle tasks (group `game`)** in the root `build.gradle.kts`; `package.json`
 is a thin `npm run <alias>` → `./gradlew <task>` shim; shell-heavy logic lives in `scripts/*.sh`
-(all call the JDK21-pinned `./gradlew`). Two dev-tooling commands (`prOpen`, `renderDocs`) are
-native `buildSrc` custom task classes; the rest (`play*`, `webConsole`, `gitTidy`, `killServers`,
-`prCreate`, `release*`) are still `Exec`-wrapped scripts. Full reference: `scripts/README.md`.
+(all call the JDK21-pinned `./gradlew`). Two dev-tooling commands (`openPr`, `renderDocs`) are
+native `buildSrc` custom task classes; the rest (`play*`, `webConsole`, `tidyGit`, `killServers`,
+`createPr`, `release*`) are still `Exec`-wrapped scripts. Full reference: `scripts/README.md`.
 
 - **No web backend** — the web app is 100 % client-side. Runtime logs/errors live in the **browser
   console** (DevTools); the dev server only shows build logs. The `webConsole` task streams the
@@ -287,6 +287,6 @@ native `buildSrc` custom task classes; the rest (`play*`, `webConsole`, `gitTidy
 
 - [ ] #19 **Deterministic command-log + replay** (elaborates #15's "deterministic replay"; needs its own `docs/` design doc before code — next free number; `0002`–`0004` are taken). Goal: log every player command + (optionally) plugin/system actions so a bug session is byte-reproducible. **Analysis done:** sim is already near-deterministic — seeded `Random(42)` (all RNG routed through it) + fixed-timestep `tick()` (ignores wall-clock `dt`; ECS gets `world.update(1f)`). So a session = **seed + ordered command stream pinned to tick**; replay regenerates all system/particle output, so logging plugin actions is only a *verification* trace, not needed to reproduce. The "commands" = `GameEngine`'s mutation surface: `startGame`/`proceedToNextLevel`/`togglePause`/`returnToMenu`/`setControlMode`, per-frame `updateKeyboardInputs`/`updateTouchTarget` + the tilt read inside `tick()`, `triggerRoll`, and `tick()` itself — funneled in from `GameScene.kt` (updater/touch/keys) + `main.kt` (stage keys). **3 gaps to close:** (1) tilt is read live from the sensor inside the tick → must record per-tick as data; (2) event-driven cmds (roll/pause/touch) need a tick stamp to preserve ordering; (3) cross-platform float math (`sin`/`sqrt`) isn't bit-identical JVM/JS/Wasm → honest guarantee is *same-platform* replay. **Open forks (parked — ask before building):** (a) refactor depth: full sealed `GameCommand` + `engine.dispatch()` *[leaning yes — matches the "command pattern" framing + future plugin/VM kernel boundary; must preserve macOS HeldKey/touch hacks]* vs minimal tap recorder; (b) log scope: commands + cheap per-tick state checksum *[leaning — checksum localizes divergence, perf-safe]* vs commands-only vs full per-system trace *[avoid — perf gate]*; (c) replay form: headless harness/test *[leaning]* vs in-app ghost replay vs recorder+format-only. **Perf gate:** recorder must be off by default + delta-encode (log on change), near-zero cost when disabled; A/B it. Log sink is multiplatform (expect/actual): JVM→file, web→console/download, Android→logcat+files.
 - [ ] #18 **iOS target** — add `targetIos()` + `iosMain/Platform.kt` (CANVAS_HEIGHT). Not wired yet; needs a Mac with Xcode
-- [x] **PR #4** — native Gradle tooling (`buildSrc`: `prOpen` + `renderDocs`) → **merged**
+- [x] **PR #4** — native Gradle tooling (`buildSrc`: `openPr` + `renderDocs`) → **merged**
 
 <!-- TASKS:auto END -->

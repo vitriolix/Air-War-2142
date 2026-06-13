@@ -79,9 +79,9 @@ Canonical commands are Gradle tasks in the **`game`** group; the `npm run <x>` s
 | `renderApiDocs` | Render the Kotlin API reference (Dokka HTML) to `build/api/index.html` |
 | `webConsole` | Boot the web build and stream its browser console + errors to the terminal |
 | `killServers` | Stop the JS/Wasm dev servers and `runJvm` |
-| `gitTidy` | Verify a clean working tree + push state |
-| `prCreate` | Push the current branch and open a GitHub PR |
-| `prOpen` | Open a PR's page in the browser (current branch, or a number) |
+| `tidyGit` | Verify a clean working tree + push state |
+| `createPr` | Push the current branch and open a GitHub PR |
+| `openPr` | Open a PR's page in the browser (current branch, or a number) |
 | `bakeAtlas` | Re-bake the sprite atlas from vector art (`:composeApp:bakeAtlas`) |
 
 **Release** — `releaseCheckGit` · `releaseTest` · `releaseBuild` · `releaseVersion` · `releaseBranch` · `releaseTag` · `release` (ordered chain).

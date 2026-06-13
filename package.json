@@ -27,10 +27,10 @@
     "docs": "./gradlew renderDocs",
     "sync:tasks": "./gradlew syncDocTasks",
     "docs:api": "./gradlew renderApiDocs",
-    "git:tidy": "./gradlew gitTidy",
+    "git:tidy": "./gradlew tidyGit",
     "kill:servers": "./gradlew killServers",
-    "pr:create": "./gradlew prCreate",
-    "pr:open": "./gradlew prOpen",
+    "pr:create": "./gradlew createPr",
+    "pr:open": "./gradlew openPr",
 
     "release:check-git": "./gradlew releaseCheckGit",
     "release:test": "./gradlew releaseTest",

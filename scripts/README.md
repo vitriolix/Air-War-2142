@@ -35,9 +35,9 @@ shell-heavy ones are implemented by the `scripts/*.sh` files that the Gradle tas
 | Gradle | npm shim | |
 |---|---|---|
 | `./gradlew webConsole` | `npm run web:console` | Boot the web build and stream its **browser** console + errors to the terminal (the web app is client-side; its logs live in the browser). For Wasm/headed: `scripts/web-console.sh wasm --headed`. Ctrl-C stops it. |
-| `./gradlew gitTidy` | `npm run git:tidy` | Clean working tree + branch/push status. |
+| `./gradlew tidyGit` | `npm run git:tidy` | Clean working tree + branch/push status. |
 | `./gradlew killServers` | `npm run kill:servers` | Stop JS/Wasm dev servers + `runJvm`. |
-| `./gradlew prCreate` | `npm run pr:create` | Push branch + open a GitHub PR. For custom flags use the script directly: `scripts/pr-create.sh --draft`. |
+| `./gradlew createPr` | `npm run pr:create` | Push branch + open a GitHub PR. For custom flags use the script directly: `scripts/pr-create.sh --draft`. |
 
 ## Release prep (each step standalone; `release` runs them in order)
 | Gradle | npm shim | |
