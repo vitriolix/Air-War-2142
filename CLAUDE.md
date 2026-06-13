@@ -22,9 +22,11 @@
 ## Pointers (durable context — the in-session task list is ephemeral)
 
 - **Task board:** read `TASKS.md` (project root) when planning or resuming feature work;
-  update it (`[ ]`→`[x]`) as things land. **As soon as a PR's branch is closed — merged
-  _or_ superseded — mark its item `[x]` and move it from `Doing` to `Done`** (a closed
-  branch means that line of work is resolved).
+  update it (`[ ]`→`[x]`) as things land. **When a PR is _merged_ (or superseded by another
+  PR that lands the work), mark its item `[x]` and move it from `Doing` to `Done`** — that
+  line of work is resolved. **A PR closed _without_ merging (rejected / invalid / abandoned /
+  won't-do) is NOT done:** don't check it off — return it to `[ ]` (out of `Doing`) and note
+  why it was dropped. Resolved ≠ merely closed.
 - **Architecture:** plugin/ECS re-architecture — decisions in the `plugin-architecture`
   memory and `docs/0001`. Read before touching engine/render code.
 - **README:** task reference, build notes, and the full workarounds list.
