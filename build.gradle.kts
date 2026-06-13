@@ -67,6 +67,7 @@ tasks.register("renderApiDocs") { group = gameGroup; description = "Render the K
 tasks.register<Exec>("tidyGit")     { description = "Verify a clean git working tree + push state."; dependsOn("checkDocTasks"); runScript("scripts/tidy-git.sh") }
 tasks.register<Exec>("killServers") { description = "Stop the JS/Wasm dev servers and runJvm.";      runScript("scripts/kill-servers.sh") }
 tasks.register<Exec>("createPr")    { description = "Push the current branch and open a GitHub PR (gh)."; runScript("scripts/create-pr.sh") }
+tasks.register<Exec>("pruneBranches") { description = "Delete local branches whose upstream is gone AND merged; prompt about any not-yet-merged ones. (script: --dry-run)"; runScript("scripts/prune-branches.sh") }
 
 // --- Release prep (each step standalone) -----------------------------------------
 tasks.register<Exec>("releaseCheckGit") { description = "Release: ensure git is tidy.";        dependsOn("checkDocTasks"); runScript("scripts/tidy-git.sh") }

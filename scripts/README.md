@@ -36,6 +36,7 @@ shell-heavy ones are implemented by the `scripts/*.sh` files that the Gradle tas
 |---|---|---|
 | `./gradlew webConsole` | `npm run web:console` | Boot the web build and stream its **browser** console + errors to the terminal (the web app is client-side; its logs live in the browser). For Wasm/headed: `scripts/web-console.sh wasm --headed`. Ctrl-C stops it. |
 | `./gradlew tidyGit` | `npm run git:tidy` | Clean working tree + branch/push status. |
+| `./gradlew pruneBranches` | `npm run branches:prune` | Delete local branches whose upstream is gone **and** merged (ancestor of base or a merged PR — covers squash-merges); prompts before deleting any not-yet-merged branch (kept by default with no terminal). `scripts/prune-branches.sh --dry-run` to preview. |
 | `./gradlew killServers` | `npm run kill:servers` | Stop JS/Wasm dev servers + `runJvm`. |
 | `./gradlew createPr` | `npm run pr:create` | Push branch + open a GitHub PR. For custom flags use the script directly: `scripts/create-pr.sh --draft`. |
 
