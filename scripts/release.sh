@@ -5,7 +5,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
 
 step_check_git() {
   info "[release] Step: git is tidy"
-  "$REPO_ROOT/scripts/git-tidy.sh"
+  "$REPO_ROOT/scripts/tidy-git.sh"
 }
 
 step_test() {

@@ -42,9 +42,25 @@ Design docs live in [`docs/`](docs/) — numbered, ADR-style (what's changing, w
 |---|---|
 | [TASKS.md](TASKS.md) | Roadmap & task board — current status, what's next, and in-flight PRs |
 | [0001 — ECS Kernel & Core Migration](docs/0001-ecs-kernel-and-core-migration.md) | Incremental migration to an ECS/plugin engine; first slice = kernel + particle migration |
+| [0002 — Plugin & ECS Architecture](docs/0002-plugin-and-ecs-architecture.md) | Reference: the plugin/kernel model, ECS objects/components/events, the contract, and what's built vs. designed |
+| [0003 — Rendering & Sprite Atlas](docs/0003-rendering-and-sprite-atlas.md) | How the game draws: build-time vector→atlas bake (shipped, the perf win) + the EMP ripple-shader Phase 2 spec |
+| [0004 — KorGE Port & Platform Notes](docs/0004-korge-port-and-platform-notes.md) | Build setup (JDK 21), KorGE API gotchas, the cross-platform input hacks, and the web perf investigation |
 | [scripts/README.md](scripts/README.md) | Task-command reference |
+| [CLAUDE.md](CLAUDE.md) | Agent working notes — hard rules, perf gate, and durable-context pointers |
 
-The full plugin/ECS architecture (plugins-as-data with a Kotlin-flavored VM, base-game-as-plugin, ECS, incremental migration) is being written up across the design docs as each slice lands.
+The full plugin/ECS architecture (plugins-as-data with a Kotlin-flavored VM, base-game-as-plugin, ECS, incremental migration) is mapped in [0002](docs/0002-plugin-and-ecs-architecture.md) — including what's built today vs. designed — and fleshed out across the design docs as each slice lands.
+
+**API reference (Dokka).** Browse the Kotlin API docs online — published to GitHub Pages on every push to `main` by [`.github/workflows/api-docs.yml`](.github/workflows/api-docs.yml):
+
+➡️ **<https://vitriolix.github.io/Air-War-2142/>**
+
+Or render them locally to HTML:
+
+```bash
+./gradlew renderApiDocs    # or: npm run docs:api   (renders to build/api/)
+```
+
+…then open `build/api/index.html` in a browser. *(Local output lives under the gitignored `build/`, so run the task first.)*
 
 ## Tasks
 
@@ -59,11 +75,15 @@ Canonical commands are Gradle tasks in the **`game`** group; the `npm run <x>` s
 | Task | Does |
 |---|---|
 | `renderDocs` | Render Markdown docs to HTML and open this README as the index |
+| `syncDocTasks` | Regenerate each doc's Tasks block from `TASKS.md` (single source); `--check` fails if stale |
+| `checkDocTasks` | Backstop: fail if any doc's Tasks block is stale (run by `tidyGit`/`releaseCheckGit`) |
+| `installGitHooks` | Point git at `scripts/hooks` — installs the pre-commit hook that auto-syncs doc Tasks blocks |
+| `renderApiDocs` | Render the Kotlin API reference (Dokka HTML) to `build/api/index.html` |
 | `webConsole` | Boot the web build and stream its browser console + errors to the terminal |
 | `killServers` | Stop the JS/Wasm dev servers and `runJvm` |
-| `gitTidy` | Verify a clean working tree + push state |
-| `prCreate` | Push the current branch and open a GitHub PR |
-| `prOpen` | Open a PR's page in the browser (current branch, or a number) |
+| `tidyGit` | Verify a clean working tree + push state |
+| `createPr` | Push the current branch and open a GitHub PR |
+| `openPr` | Open a PR's page in the browser (current branch, or a number) |
 | `bakeAtlas` | Re-bake the sprite atlas from vector art (`:composeApp:bakeAtlas`) |
 
 **Release** — `releaseCheckGit` · `releaseTest` · `releaseBuild` · `releaseVersion` · `releaseBranch` · `releaseTag` · `release` (ordered chain).

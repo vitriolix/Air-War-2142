@@ -59,13 +59,17 @@ tasks.register("testAll")     { group = gameGroup; description = "Run all tests.
 tasks.register<Exec>("webConsole")  { description = "Boot the web build and stream its browser console + errors to the terminal."; runScript("scripts/web-console.sh") }
 // Native custom-task helpers (buildSrc) — logic lives in the Gradle task context, not bash.
 tasks.register<RenderDocs>("renderDocs") { group = gameGroup; description = "Render Markdown docs (README + docs/) to HTML and open the index. --file=<path> for one." }
-tasks.register<PrOpen>("prOpen")         { group = gameGroup; description = "Open a GitHub PR's page in the browser. --pr=<number|branch> (default: current branch)." }
-tasks.register<Exec>("gitTidy")     { description = "Verify a clean git working tree + push state."; runScript("scripts/git-tidy.sh") }
+tasks.register<PrOpen>("openPr")         { group = gameGroup; description = "Open a GitHub PR's page in the browser. --pr=<number|branch> (default: current branch)." }
+tasks.register<SyncDocTasks>("syncDocTasks") { group = gameGroup; description = "Regenerate each doc's Tasks block from TASKS.md (single source). --check fails if stale (CI)." }
+tasks.register<SyncDocTasks>("checkDocTasks") { group = gameGroup; description = "Backstop: fail if any doc's Tasks block is out of sync with TASKS.md. Run by tidyGit/releaseCheckGit."; check.set(true) }
+tasks.register<Exec>("installGitHooks") { group = gameGroup; description = "Point git at the committed hooks (scripts/hooks) — auto-syncs doc task blocks on commit."; workingDir = rootDir; commandLine("git", "config", "core.hooksPath", "scripts/hooks") }
+tasks.register("renderApiDocs") { group = gameGroup; description = "Render the Kotlin API reference (Dokka HTML) → build/api/index.html. Pairs with renderDocs."; dependsOn(":composeApp:dokkaHtml") }
+tasks.register<Exec>("tidyGit")     { description = "Verify a clean git working tree + push state."; dependsOn("checkDocTasks"); runScript("scripts/tidy-git.sh") }
 tasks.register<Exec>("killServers") { description = "Stop the JS/Wasm dev servers and runJvm.";      runScript("scripts/kill-servers.sh") }
-tasks.register<Exec>("prCreate")    { description = "Push the current branch and open a GitHub PR (gh)."; runScript("scripts/pr-create.sh") }
+tasks.register<Exec>("createPr")    { description = "Push the current branch and open a GitHub PR (gh)."; runScript("scripts/create-pr.sh") }
 
 // --- Release prep (each step standalone) -----------------------------------------
-tasks.register<Exec>("releaseCheckGit") { description = "Release: ensure git is tidy.";        runScript("scripts/git-tidy.sh") }
+tasks.register<Exec>("releaseCheckGit") { description = "Release: ensure git is tidy.";        dependsOn("checkDocTasks"); runScript("scripts/tidy-git.sh") }
 tasks.register("releaseTest")           { group = gameGroup; description = "Release: run all tests."; dependsOn(":composeApp:allTests") }
 tasks.register("releaseBuild") {
     group = gameGroup; description = "Release: build JVM jar + web prod bundle + Android release APK."

@@ -11,7 +11,7 @@ if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
   fail "You're on '$branch'. Create a feature branch first: git switch -c my-feature"
 fi
 if [ -n "$(git status --porcelain)" ]; then
-  fail "Working tree not clean — commit your changes first (see: ./gradlew gitTidy)."
+  fail "Working tree not clean — commit your changes first (see: ./gradlew tidyGit)."
 fi
 
 info "Pushing '$branch' to origin…"

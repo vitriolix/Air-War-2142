@@ -25,10 +25,12 @@
 
     "web:console": "./gradlew webConsole",
     "docs": "./gradlew renderDocs",
-    "git:tidy": "./gradlew gitTidy",
+    "sync:tasks": "./gradlew syncDocTasks",
+    "docs:api": "./gradlew renderApiDocs",
+    "git:tidy": "./gradlew tidyGit",
     "kill:servers": "./gradlew killServers",
-    "pr:create": "./gradlew prCreate",
-    "pr:open": "./gradlew prOpen",
+    "pr:create": "./gradlew createPr",
+    "pr:open": "./gradlew openPr",
 
     "release:check-git": "./gradlew releaseCheckGit",
     "release:test": "./gradlew releaseTest",

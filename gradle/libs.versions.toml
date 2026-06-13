@@ -4,3 +4,5 @@ kotlin = "2.0.21"
 
 [plugins]
 korge = { id = "com.soywiz.korge", version.ref = "korge" }
+# Dokka (API docs) is applied version-less in composeApp — it's already on the build classpath
+# via KorGE, so it isn't declared here.

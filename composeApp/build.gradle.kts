@@ -1,5 +1,15 @@
 plugins {
     alias(libs.plugins.korge)
+    // No version: Dokka is already on the build classpath (pulled in transitively by KorGE),
+    // so re-declaring a version errors ("already on the classpath with an unknown version").
+    id("org.jetbrains.dokka")
+}
+
+// API reference (Dokka — the Kotlin Javadoc). Output to the root build/api/ so the README
+// link (build/api/index.html) is short. Generate via the root `apiDocs` task.
+tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
+    moduleName.set("Air War 2142")
+    outputDirectory.set(rootProject.layout.buildDirectory.dir("api"))
 }
 
 korge {
