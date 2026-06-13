@@ -23,30 +23,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # KorGE 6 requires the Gradle daemon on JDK 21 (rejects <21, can't parse 26).
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
 
       # The composeApp build declares an Android target, so the project can't even
       # be configured without an Android SDK (AGP needs ANDROID_HOME / sdk.dir).
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
 
       # gradle.properties pins org.gradle.java.home to a local brew path that doesn't
       # exist on the runner — drop it so Gradle uses the JDK 21 from setup-java (JAVA_HOME).
       - name: Use the runner's JDK 21 for Gradle
         run: sed -i '/^org.gradle.java.home=/d' gradle.properties
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Render API docs (Dokka HTML → build/api)
         run: ./gradlew renderApiDocs --no-daemon --stacktrace
 
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: build/api
 
@@ -58,4 +58,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
