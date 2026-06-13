@@ -7,6 +7,13 @@ name: API docs
 on:
   push:
     branches: [main]
+    # Only rebuild when something that affects the API docs changes — skip doc/rule/script-only
+    # merges. (workflow_dispatch below still allows a manual rebuild anytime.)
+    paths:
+      - 'composeApp/src/**'
+      - '**/*.gradle.kts'
+      - 'gradle/libs.versions.toml'
+      - '.github/workflows/api-docs.yml'
   workflow_dispatch:
 
 permissions:
