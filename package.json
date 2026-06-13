@@ -28,6 +28,7 @@
     "sync:tasks": "./gradlew syncDocTasks",
     "docs:api": "./gradlew renderApiDocs",
     "git:tidy": "./gradlew tidyGit",
+    "branches:prune": "./gradlew pruneBranches",
     "kill:servers": "./gradlew killServers",
     "pr:create": "./gradlew createPr",
     "pr:open": "./gradlew openPr",
