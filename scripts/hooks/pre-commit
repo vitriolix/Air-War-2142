@@ -1,0 +1,20 @@
+#!/bin/sh
+# Auto-fixing pre-commit hook: keep each doc's generated "Tasks" block in sync with
+# TASKS.md so the committed blocks never drift.
+#
+# Install once:  ./gradlew installGitHooks   (sets core.hooksPath=scripts/hooks)
+#
+# Only runs when TASKS.md is part of the commit — it's the sole input that changes the
+# blocks, so unrelated commits skip the Gradle startup cost. The Gradle backstop
+# (checkDocTasks, wired into tidyGit/releaseCheckGit) catches anything that bypasses this.
+
+if git diff --cached --name-only | grep -qx 'TASKS.md'; then
+  echo "pre-commit: TASKS.md staged → regenerating doc task blocks…"
+  if ! ./gradlew -q syncDocTasks; then
+    echo "pre-commit: syncDocTasks failed; aborting commit." >&2
+    exit 1
+  fi
+  # Stage the regenerated managed blocks so they land in this commit.
+  git add docs/*.md
+fi
+exit 0

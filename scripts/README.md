@@ -39,6 +39,12 @@ shell-heavy ones are implemented by the `scripts/*.sh` files that the Gradle tas
 | `./gradlew killServers` | `npm run kill:servers` | Stop JS/Wasm dev servers + `runJvm`. |
 | `./gradlew createPr` | `npm run pr:create` | Push branch + open a GitHub PR. For custom flags use the script directly: `scripts/pr-create.sh --draft`. |
 
+## Git hooks
+Run `./gradlew installGitHooks` once per clone — it sets `core.hooksPath=scripts/hooks`, enabling
+the committed **`pre-commit`** hook. When a commit includes `TASKS.md`, the hook regenerates each
+doc's "Tasks" block (`syncDocTasks`) and stages the result, so the generated blocks never drift.
+Backstop: `tidyGit` and `releaseCheckGit` run `checkDocTasks`, which **fails** if any block is stale.
+
 ## Release prep (each step standalone; `release` runs them in order)
 | Gradle | npm shim | |
 |---|---|---|

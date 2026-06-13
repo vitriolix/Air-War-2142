@@ -75,7 +75,9 @@ Canonical commands are Gradle tasks in the **`game`** group; the `npm run <x>` s
 | Task | Does |
 |---|---|
 | `renderDocs` | Render Markdown docs to HTML and open this README as the index |
-| `syncDocTasks` | Regenerate each doc's Tasks block from `TASKS.md` (single source); `--check` fails if stale (CI) |
+| `syncDocTasks` | Regenerate each doc's Tasks block from `TASKS.md` (single source); `--check` fails if stale |
+| `checkDocTasks` | Backstop: fail if any doc's Tasks block is stale (run by `tidyGit`/`releaseCheckGit`) |
+| `installGitHooks` | Point git at `scripts/hooks` — installs the pre-commit hook that auto-syncs doc Tasks blocks |
 | `renderApiDocs` | Render the Kotlin API reference (Dokka HTML) to `build/api/index.html` |
 | `webConsole` | Boot the web build and stream its browser console + errors to the terminal |
 | `killServers` | Stop the JS/Wasm dev servers and `runJvm` |
