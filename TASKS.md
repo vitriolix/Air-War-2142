@@ -54,6 +54,7 @@ as a sequence of small, perf-gated PRs, game playable at every merge. See
 - [ ] #16 Interpreter tech stack (reference) — antlr-kotlin (Wasm-proven parse) + hand-rolled tree-walker; luak/TENUM refs <!-- docs:0002 -->
 - [~] #17 Plugin "store"/registry — deferred (much later); iOS App Store 2.5.2 means curated bundled-only there <!-- docs:0002 -->
 - [ ] #18 **iOS target** — add `targetIos()` + `iosMain/Platform.kt` (CANVAS_HEIGHT). Not wired yet; needs a Mac with Xcode <!-- docs:0004 -->
+- [ ] #20 **Verify `pruneBranches` interactive prompt** — the keep / delete-anyway / log path for *unmerged* branches (`scripts/prune-branches.sh`, landed in PR #11) was code-reviewed but **not runtime-tested** (no TTY in the agent env). Manually run `./gradlew pruneBranches` with a real unmerged stray branch to confirm the prompt UX (and the auto-switch-then-delete on `d`). The merged-delete, unmerged-keep, and current-branch auto-switch paths *were* verified.
 
 ## Done
 
