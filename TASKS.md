@@ -54,7 +54,7 @@ as a sequence of small, perf-gated PRs, game playable at every merge. See
 - [ ] #16 Interpreter tech stack (reference) — antlr-kotlin (Wasm-proven parse) + hand-rolled tree-walker; luak/TENUM refs <!-- docs:0002 -->
 - [~] #17 Plugin "store"/registry — deferred (much later); iOS App Store 2.5.2 means curated bundled-only there <!-- docs:0002 -->
 - [ ] #18 **iOS target** — add `targetIos()` + `iosMain/Platform.kt` (CANVAS_HEIGHT). Not wired yet; needs a Mac with Xcode <!-- docs:0004 -->
-- [ ] #20 **Verify `pruneBranches` interactive prompt** — the keep / delete-anyway / log path for *unmerged* branches (`scripts/prune-branches.sh`, landed in PR #11) was code-reviewed but **not runtime-tested** (no TTY in the agent env). Manually run `./gradlew pruneBranches` with a real unmerged stray branch to confirm the prompt UX (and the auto-switch-then-delete on `d`). The merged-delete, unmerged-keep, and current-branch auto-switch paths *were* verified.
+- [x] #20 **`pruneBranches` interactive prompt — verified + Gradle-TTY limitation found.** The keep/delete/log prompt works when the script is run **directly** (`scripts/prune-branches.sh` → chose `d`, force-deleted an unmerged branch ✓). But **`./gradlew pruneBranches` can never prompt** — the Gradle daemon has no controlling terminal, so `/dev/tty` is unavailable even from a real shell; via Gradle it cleans merged branches and keeps unmerged ones. Fix landed: actionable no-TTY message, README/scripts docs note the split, and the `branches:prune` npm shim now calls the script directly (interactive). Merged-delete, unmerged-keep, and current-branch auto-switch were already verified.
 
 ## Done
 
