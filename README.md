@@ -82,7 +82,7 @@ Canonical commands are Gradle tasks in the **`game`** group; the `npm run <x>` s
 | `webConsole` | Boot the web build and stream its browser console + errors to the terminal |
 | `killServers` | Stop the JS/Wasm dev servers and `runJvm` |
 | `tidyGit` | Verify a clean working tree + push state |
-| `pruneBranches` | Delete local branches whose upstream is gone **and** merged; prompts before removing any not-yet-merged branch |
+| `pruneBranches` | Delete local branches whose upstream is gone **and** merged (keeps unmerged). For the interactive keep/delete prompt on unmerged branches, run `scripts/prune-branches.sh` directly — Gradle's daemon has no TTY, so the task can't prompt |
 | `createPr` | Push the current branch and open a GitHub PR |
 | `openPr` | Open a PR's page in the browser (current branch, or a number) |
 | `bakeAtlas` | Re-bake the sprite atlas from vector art (`:composeApp:bakeAtlas`) |

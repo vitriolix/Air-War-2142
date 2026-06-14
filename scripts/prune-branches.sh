@@ -8,6 +8,8 @@
 # first (you can't delete the branch you're on) — requires a clean working tree.
 #
 # Usage: prune-branches.sh [--dry-run]   (--dry-run reports, deletes nothing, never prompts)
+# Run this DIRECTLY for the interactive prompt — `./gradlew pruneBranches` runs it in the Gradle
+# daemon, which has no controlling terminal, so it can't prompt (it cleans merged, keeps unmerged).
 source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
 require_git_repo
 
@@ -78,7 +80,7 @@ for b in $gone; do
   fi
 
   if [ "$tty_ok" -eq 0 ]; then
-    warn "No terminal to prompt — keeping unmerged '$b'."
+    warn "No terminal to prompt — keeping unmerged '$b'. Run 'scripts/prune-branches.sh' directly in a terminal to decide (./gradlew can't prompt — the Gradle daemon has no TTY)."
     kept=$((kept + 1)); continue
   fi
   while true; do
