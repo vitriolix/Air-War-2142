@@ -1,6 +1,6 @@
-package com.example.clone1942.audio
+package com.vitriolix.airwar2142.audio
 
-import com.example.clone1942.interfaces.SoundPlayer
+import com.vitriolix.airwar2142.interfaces.SoundPlayer
 
 class NoOpSoundPlayer : SoundPlayer {
     override fun playShoot() {}

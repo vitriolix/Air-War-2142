@@ -1,4 +1,4 @@
-package com.example.clone1942.ecs
+package com.vitriolix.airwar2142.ecs
 
 import kotlin.reflect.KClass
 

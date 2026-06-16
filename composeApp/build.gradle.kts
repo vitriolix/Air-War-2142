@@ -13,9 +13,9 @@ tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
 }
 
 korge {
-    id = "com.example.clone1942"
+    id = "com.vitriolix.airwar2142"
     version = "1.0.0"
-    name = "1942 Retro Clone"
+    name = "Air War 2142"
     targetJvm()
     targetAndroid()
     targetJs()
@@ -30,14 +30,14 @@ afterEvaluate {
 }
 
 // Build-time sprite-atlas bake — renders the vector shapes to a PNG atlas headlessly.
-// Runs com.example.clone1942.bake.BakeAtlas (in jvmMain) on the JVM compilation classpath.
+// Runs com.vitriolix.airwar2142.bake.BakeAtlas (in jvmMain) on the JVM compilation classpath.
 tasks.register<JavaExec>("bakeAtlas") {
     group = "game"
     description = "Render vector shapes to a sprite atlas (build-time)."
     val jvmMainComp = kotlin.targets.getByName("jvm").compilations.getByName("main")
     dependsOn(jvmMainComp.compileTaskProvider)
     classpath = files(jvmMainComp.output.allOutputs, jvmMainComp.runtimeDependencyFiles)
-    mainClass.set("com.example.clone1942.bake.BakeAtlasKt")
+    mainClass.set("com.vitriolix.airwar2142.bake.BakeAtlasKt")
     val resDir = layout.projectDirectory.dir("src/commonMain/resources")
     args(resDir.asFile.absolutePath)
     outputs.dir(resDir)

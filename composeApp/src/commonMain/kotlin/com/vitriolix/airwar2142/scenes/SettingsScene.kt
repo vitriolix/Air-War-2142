@@ -1,4 +1,4 @@
-package com.example.clone1942.scenes
+package com.vitriolix.airwar2142.scenes
 
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
@@ -6,9 +6,9 @@ import korlibs.korge.scene.Scene
 import korlibs.korge.scene.SceneContainer
 import korlibs.korge.input.onClickSuspend
 import korlibs.korge.view.*
-import com.example.clone1942.CANVAS_HEIGHT
-import com.example.clone1942.logic.ControlMode
-import com.example.clone1942.logic.GameEngine
+import com.vitriolix.airwar2142.CANVAS_HEIGHT
+import com.vitriolix.airwar2142.logic.ControlMode
+import com.vitriolix.airwar2142.logic.GameEngine
 
 class SettingsScene(
     private val engine: GameEngine,

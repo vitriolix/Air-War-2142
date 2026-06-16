@@ -14,5 +14,5 @@ dependencyResolutionManagement {
 }
 
 
-rootProject.name = "Clone1942"
+rootProject.name = "AirWar2142"
 include(":composeApp")

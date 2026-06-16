@@ -1,4 +1,4 @@
-package com.example.clone1942.render
+package com.vitriolix.airwar2142.render
 
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
@@ -6,12 +6,12 @@ import korlibs.image.paint.LinearGradientPaint
 import korlibs.image.vector.ShapeBuilder
 import korlibs.math.geom.Point
 import korlibs.math.geom.Size2D
-import com.example.clone1942.logic.BackgroundCloud
-import com.example.clone1942.logic.BackgroundIsland
-import com.example.clone1942.logic.Enemy
-import com.example.clone1942.logic.EnemyType
-import com.example.clone1942.logic.GameEngine
-import com.example.clone1942.logic.PlayerState
+import com.vitriolix.airwar2142.logic.BackgroundCloud
+import com.vitriolix.airwar2142.logic.BackgroundIsland
+import com.vitriolix.airwar2142.logic.Enemy
+import com.vitriolix.airwar2142.logic.EnemyType
+import com.vitriolix.airwar2142.logic.GameEngine
+import com.vitriolix.airwar2142.logic.PlayerState
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Vector art — the single authoring source for every game object.
