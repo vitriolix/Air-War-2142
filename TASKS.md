@@ -13,7 +13,7 @@ docs and project memory; this is the actionable index.
 
 ## Doing
 
-_(nothing in flight — next up: PR-B, plugin host + registered systems)_
+- [›] **Claude Design round-trip** — `design/` handoff workspace + `designExport`/`designImport` Gradle tasks (buildSrc `Design.kt`). Reproduce-then-refine the UI in claude.ai/design. Built: `PROMPT.md` brief; `design-tokens.json` (authoritative, transcribed from `scenes/*.kt`); `spec.html` faithful baseline = **real screenshots** (`./gradlew captureScreens`) + real sprite-atlas gallery; old idealized mockup split out as `refinement-mockup.html` (labeled NOT-current); `renderDocs` surfaces the whole bundle as a browsable shared spec. **Still open:** capture Game Over / Victory screens (need gameplay); resvg SVG-sprite bake pipeline (decided resvg-only; provision + prove-glow held until this lands).
 
 ## Roadmap — incremental ECS/plugin migration
 

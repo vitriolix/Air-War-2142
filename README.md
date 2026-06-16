@@ -86,6 +86,8 @@ Canonical commands are Gradle tasks in the **`game`** group; the `npm run <x>` s
 | `createPr` | Push the current branch and open a GitHub PR |
 | `openPr` | Open a PR's page in the browser (current branch, or a number) |
 | `bakeAtlas` | Re-bake the sprite atlas from vector art (`:composeApp:bakeAtlas`) |
+| `designExport` | **Code → Claude Design:** stage the `design/` handoff bundle (refresh assets, open `spec.html`, print push steps). See [`design/README.md`](design/README.md) |
+| `designImport` | **Claude Design → Code:** review refined files dropped in `design/incoming/` and print how to apply them |
 
 **Release** — `releaseCheckGit` · `releaseTest` · `releaseBuild` · `releaseVersion` · `releaseBranch` · `releaseTag` · `release` (ordered chain).
 

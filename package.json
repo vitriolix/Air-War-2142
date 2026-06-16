@@ -24,6 +24,9 @@
     "test:all": "./gradlew testAll",
 
     "web:console": "./gradlew webConsole",
+    "design:export": "./gradlew designExport",
+    "design:import": "./gradlew designImport",
+    "design:capture": "./gradlew captureScreens",
     "docs": "./gradlew renderDocs",
     "sync:tasks": "./gradlew syncDocTasks",
     "docs:api": "./gradlew renderApiDocs",

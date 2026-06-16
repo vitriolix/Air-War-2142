@@ -447,8 +447,17 @@
 </head>
 <body>
 
-<h1>AIR WAR 2142 — UI DESIGN SPEC</h1>
-<p class="subtitle">All screens · Colors extracted from Compose source · Mobile portrait 390×844</p>
+<div style="background:#3a1a00;border:2px solid #FF9900;border-radius:12px;padding:16px 20px;margin-bottom:28px;max-width:1280px;">
+  <div style="color:#FF9900;font-weight:700;letter-spacing:2px;font-size:13px;margin-bottom:6px;">⚠ PROPOSED REFINEMENT — NOT THE CURRENT UI</div>
+  <div style="color:rgba(255,255,255,0.75);font-size:13px;line-height:1.6;">
+    This is an aspirational mockup (glass panels, idealized layout, <code>✈</code> emoji placeholders).
+    The game does <b>not</b> render this. For what the game actually looks like today, see
+    <b>spec.html</b> (real screenshots + the real sprite atlas). Use this file only as a <i>refine-toward</i> target.
+  </div>
+</div>
+
+<h1>AIR WAR 2142 — UI REFINEMENT MOCKUP (aspirational)</h1>
+<p class="subtitle">Idealized target, not current state · current baseline lives in spec.html · design-tokens.json is authoritative</p>
 
 <div class="screens-grid">
 
@@ -462,10 +471,10 @@
       <div class="island" style="width:50px;height:50px;background:#E2D4A8;top:300px;right:50px;opacity:0.5;"></div>
       <div class="island" style="width:43px;height:43px;background:#2E8B57;top:303px;right:53px;opacity:0.5;"></div>
 
-      <!-- Title box -->
+      <!-- Title box (MenuScene.kt: "AIR WAR" 56px cyan, "2142" 184px gold) -->
       <div class="menu-title-box">
+        <div class="title-sub">AIR WAR</div>
         <div class="title-airwar2142">2142</div>
-        <div class="title-sub">RETRO CLONE</div>
       </div>
 
       <!-- Buttons -->
