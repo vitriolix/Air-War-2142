@@ -62,3 +62,4 @@ as a sequence of small, perf-gated PRs, game playable at every merge. See
 - [x] **PR #3** — `pr-open` bash helper → closed, superseded by native `openPr` in #4
 - [x] **PR #4** — native Gradle tooling (`buildSrc`: `openPr` + `renderDocs`) → **merged** <!-- docs:0004 -->
 - [x] **PR #5** — project docs (README, TASKS, CLAUDE) → **merged**
+- [x] **PR #14** — rename project to Air War 2142 (`com.vitriolix.airwar2142`); title screen "RETRO CLONE" → "AIR WAR" → **merged**
