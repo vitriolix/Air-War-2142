@@ -1,23 +1,23 @@
-import com.example.clone1942.CANVAS_HEIGHT
+import com.vitriolix.airwar2142.CANVAS_HEIGHT
 import korlibs.event.Key
 import korlibs.image.color.Colors
 import korlibs.korge.Korge
 import korlibs.korge.input.keys
 import korlibs.korge.scene.SceneContainer
-import com.example.clone1942.audio.NoOpSoundPlayer
-import com.example.clone1942.input.NoOpSensorInput
-import com.example.clone1942.logic.GameEngine
-import com.example.clone1942.logic.GameState
-import com.example.clone1942.scenes.EscapeHandler
-import com.example.clone1942.scenes.GameScene
-import com.example.clone1942.scenes.KeyboardNavigable
-import com.example.clone1942.scenes.MenuScene
-import com.example.clone1942.scenes.SettingsScene
+import com.vitriolix.airwar2142.audio.NoOpSoundPlayer
+import com.vitriolix.airwar2142.input.NoOpSensorInput
+import com.vitriolix.airwar2142.logic.GameEngine
+import com.vitriolix.airwar2142.logic.GameState
+import com.vitriolix.airwar2142.scenes.EscapeHandler
+import com.vitriolix.airwar2142.scenes.GameScene
+import com.vitriolix.airwar2142.scenes.KeyboardNavigable
+import com.vitriolix.airwar2142.scenes.MenuScene
+import com.vitriolix.airwar2142.scenes.SettingsScene
 
 suspend fun main() = Korge(
     windowWidth = 1000,
     windowHeight = CANVAS_HEIGHT,
-    title = "1942 Retro Clone",
+    title = "Air War 2142",
     bgcolor = Colors["#0F2027"]
 ) {
     // Prevent the platform from acting on ESC/back before the game handles it

@@ -15,7 +15,7 @@ verified against the repo at time of writing; update as the engine evolves.
 
 ## 1. The port & the engine choice
 
-The 1942 arcade clone was ported from Kotlin Multiplatform + Compose Multiplatform to **KorGE**
+Air War 2142 was ported from Kotlin Multiplatform + Compose Multiplatform to **KorGE**
 (Gradle plugin `com.soywiz.korge`), 5.2.0 → now **6.0.0**.
 
 > **Caveat (don't lose this):** KorGE was named by josh as an *example* of the category "Kotlin

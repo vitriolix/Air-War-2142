@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme._1942Clone" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.AirWar2142" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>

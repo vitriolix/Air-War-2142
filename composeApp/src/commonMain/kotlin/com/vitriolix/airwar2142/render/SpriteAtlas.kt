@@ -1,4 +1,4 @@
-package com.example.clone1942.render
+package com.vitriolix.airwar2142.render
 
 import korlibs.image.bitmap.BmpSlice
 import korlibs.image.bitmap.sliceWithSize

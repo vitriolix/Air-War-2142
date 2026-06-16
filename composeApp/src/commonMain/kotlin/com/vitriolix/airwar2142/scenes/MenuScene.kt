@@ -1,4 +1,4 @@
-package com.example.clone1942.scenes
+package com.vitriolix.airwar2142.scenes
 
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
@@ -9,10 +9,10 @@ import korlibs.korge.scene.SceneContainer
 import korlibs.korge.input.onClickSuspend
 import korlibs.korge.view.*
 import korlibs.math.geom.Point
-import com.example.clone1942.CANVAS_HEIGHT
-import com.example.clone1942.logic.BackgroundIsland
-import com.example.clone1942.logic.GameEngine
-import com.example.clone1942.logic.GameState
+import com.vitriolix.airwar2142.CANVAS_HEIGHT
+import com.vitriolix.airwar2142.logic.BackgroundIsland
+import com.vitriolix.airwar2142.logic.GameEngine
+import com.vitriolix.airwar2142.logic.GameState
 
 class MenuScene(
     private val engine: GameEngine,
@@ -32,8 +32,8 @@ class MenuScene(
             graphics { }.also { g -> g.updateShape { drawMenuIslandCentered(isl) } }
         }
 
-        text("1942",        184.0, Colors["#FFCC00"]).position(80.0, 240.0)
-        text("RETRO CLONE",  56.0, Colors["#00FFFF"]).position(90.0, 450.0)
+        text("AIR WAR", 56.0, Colors["#00FFFF"]).position(90.0, 200.0)
+        text("2142",  184.0, Colors["#FFCC00"]).position(80.0, 260.0)
 
         val fc = FocusController()
 

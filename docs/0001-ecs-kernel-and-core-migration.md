@@ -47,7 +47,7 @@ Scripting VM / interpreter · plugin manifest loader · distribution / `plugins/
 
 Particles are the right first target: they're already pooled data (`Particle(x,y,vx,vy,size,color,maxLife,life)`), purely visual, and high-count — a good exercise of storage + iteration without risking gameplay.
 
-### 3.1 The kernel skeleton (new package `com.example.clone1942.ecs`)
+### 3.1 The kernel skeleton (new package `com.vitriolix.airwar2142.ecs`)
 
 A minimal **sparse-set ECS**: dense component arrays for cache-friendly iteration, an entity→slot index for joins/removal. (The perf gate requires typed dense storage, *not* `HashMap<Entity,Component>` per component.)
 

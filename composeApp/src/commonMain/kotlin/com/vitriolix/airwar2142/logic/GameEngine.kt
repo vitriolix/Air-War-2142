@@ -1,9 +1,9 @@
-package com.example.clone1942.logic
+package com.vitriolix.airwar2142.logic
 
-import com.example.clone1942.CANVAS_HEIGHT
-import com.example.clone1942.ecs.*
-import com.example.clone1942.interfaces.SoundPlayer
-import com.example.clone1942.interfaces.SensorInput
+import com.vitriolix.airwar2142.CANVAS_HEIGHT
+import com.vitriolix.airwar2142.ecs.*
+import com.vitriolix.airwar2142.interfaces.SoundPlayer
+import com.vitriolix.airwar2142.interfaces.SensorInput
 import kotlin.random.Random
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

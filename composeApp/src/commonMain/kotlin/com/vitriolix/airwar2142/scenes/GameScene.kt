@@ -1,4 +1,4 @@
-package com.example.clone1942.scenes
+package com.vitriolix.airwar2142.scenes
 
 import korlibs.event.Key
 import korlibs.image.color.Colors
@@ -12,11 +12,11 @@ import korlibs.korge.scene.SceneContainer
 import korlibs.korge.view.*
 import korlibs.math.geom.Angle
 import korlibs.math.geom.Point
-import com.example.clone1942.CANVAS_HEIGHT
-import com.example.clone1942.ecs.Particle
-import com.example.clone1942.ecs.Position
-import com.example.clone1942.logic.*
-import com.example.clone1942.render.*
+import com.vitriolix.airwar2142.CANVAS_HEIGHT
+import com.vitriolix.airwar2142.ecs.Particle
+import com.vitriolix.airwar2142.ecs.Position
+import com.vitriolix.airwar2142.logic.*
+import com.vitriolix.airwar2142.render.*
 import kotlin.math.*
 
 class GameScene(
@@ -459,7 +459,7 @@ private class HeldKey(private val releaseDelayMs: Double = 80.0, private val now
 }
 
 // ── Particle color helper ─────────────────────────────────────────────────────
-// (The vector shape functions live in com.example.clone1942.render.Shapes — shared
+// (The vector shape functions live in com.vitriolix.airwar2142.render.Shapes — shared
 // with the build-time atlas bake.)
 
 private fun argbToRgba(argb: Int) = RGBA(

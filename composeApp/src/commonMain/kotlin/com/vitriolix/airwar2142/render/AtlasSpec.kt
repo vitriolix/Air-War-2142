@@ -1,6 +1,6 @@
-package com.example.clone1942.render
+package com.vitriolix.airwar2142.render
 
-import com.example.clone1942.logic.EnemyType
+import com.vitriolix.airwar2142.logic.EnemyType
 
 // Shared contract between the build-time bake (jvmMain BakeAtlas) and the runtime
 // atlas loader (GameScene). Slice names, reference sizes and the bake scale MUST

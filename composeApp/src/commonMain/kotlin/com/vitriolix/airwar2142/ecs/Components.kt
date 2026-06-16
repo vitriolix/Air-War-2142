@@ -1,4 +1,4 @@
-package com.example.clone1942.ecs
+package com.vitriolix.airwar2142.ecs
 
 // First components. Position/Velocity are generic "core" standard-vocabulary
 // components (reused as bullets/enemies migrate); Particle is the per-particle

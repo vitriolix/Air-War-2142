@@ -1,4 +1,4 @@
-package com.example.clone1942.ecs
+package com.vitriolix.airwar2142.ecs
 
 // Moves anything with Position + Velocity, one fixed step per tick (matches the
 // engine's integer-step integration: x += vx, y += vy). Generic on purpose — it

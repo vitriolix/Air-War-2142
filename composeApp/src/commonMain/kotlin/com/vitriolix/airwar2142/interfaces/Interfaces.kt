@@ -1,4 +1,4 @@
-package com.example.clone1942.interfaces
+package com.vitriolix.airwar2142.interfaces
 
 interface SoundPlayer {
     fun playShoot()

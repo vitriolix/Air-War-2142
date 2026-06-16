@@ -1,6 +1,6 @@
-package com.example.clone1942.input
+package com.vitriolix.airwar2142.input
 
-import com.example.clone1942.interfaces.SensorInput
+import com.vitriolix.airwar2142.interfaces.SensorInput
 
 class NoOpSensorInput : SensorInput {
     override fun getTiltValues(): Pair<Float, Float> = Pair(0f, 0f)
