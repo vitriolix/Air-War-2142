@@ -109,7 +109,7 @@ abstract class RenderDocs : DefaultTask() {
             val outFile = File(out, "$slug.html")
             renderOne(src, outFile, styleFile, title)
             val srcDir = src.parentFile.relativeTo(root).path                // "" for root, "docs", "scripts"…
-            relink(outFile, srcDir, landing, root, out)                      // .md → rendered .html; copy linked assets
+            relink(outFile, srcDir, landing, root, out, styleFile)           // .md → .html; render code; copy assets
             entries.append("<li><span class=\"f\">${esc(rel)}</span>")
                 .append("<a href=\"$slug.html\"><span class=\"t\">${esc(title)}</span></a>")
                 .append("<p>${esc(blurbOf(src))}</p></li>")
@@ -118,6 +118,8 @@ abstract class RenderDocs : DefaultTask() {
 
         // Root README is the index/landing when present; else generate a standalone index.
         if (rootReadme.exists()) {
+            // A web server serves index.html for a bare /docs/ request; mirror the README landing there.
+            File(out, "index.html").writeText(File(out, "README.html").readText())
             logger.lifecycle("Rendered ${docs.size} docs → build/docs/ (landing: README)")
             open(File(out, "README.html"))
         } else {
@@ -141,6 +143,27 @@ abstract class RenderDocs : DefaultTask() {
         }
     }
 
+    // Data/code files already rendered to a highlighted page (dedupe; one page per repo-relative file).
+    private val renderedCode = HashSet<String>()
+
+    /**
+     * Render a linked data/code file (e.g. design-tokens.json) as a syntax-highlighted HTML page in
+     * the docs style, instead of serving it raw. Keeps the file's repo-relative path (just appends
+     * .html) so the URL mirrors the source — design/design-tokens.json → design/design-tokens.json.html.
+     * Returns the rewritten href.
+     */
+    private fun renderCodePage(root: File, out: File, style: File, target: File, lang: String): String {
+        val rel = target.relativeTo(root).path
+        val href = rel.replace(File.separatorChar, '/') + ".html"          // forward slashes for the HTML href
+        if (renderedCode.add(rel)) {
+            val outFile = File(out, "$rel.html").apply { parentFile?.mkdirs() }
+            val md = File.createTempFile("code", ".md").apply { writeText("```$lang\n${target.readText()}\n```\n") }
+            renderOne(md, outFile, style, rel)                              // pandoc highlights the fenced block
+            md.delete()
+        }
+        return href
+    }
+
     // Asset folders already copied into build/docs/ (dedupe; one copy per repo-relative dir).
     private val copiedAssets = HashSet<String>()
 
@@ -151,7 +174,7 @@ abstract class RenderDocs : DefaultTask() {
         dir.copyRecursively(File(out, rel), overwrite = true) { _, _ -> OnErrorAction.SKIP }
     }
 
-    private fun relink(f: File, srcDir: String, landing: String, root: File, out: File) {
+    private fun relink(f: File, srcDir: String, landing: String, root: File, out: File, style: File) {
         // Links in the source .md are relative to the SOURCE file's dir; resolve against srcDir first,
         // then route each kind. The rendered .html files are flat (path→dash slug), so .md links become
         // those slugs; real assets are copied into build/docs/ at their repo-relative path and linked there.
@@ -165,7 +188,12 @@ abstract class RenderDocs : DefaultTask() {
                 // .md cross-link → its rendered (flat, slugified) .html
                 raw.endsWith(".md") ->
                     "href=\"${resolved.removeSuffix(".md").replace(Regex("[/ ]+"), "-")}.html$anchor\""
-                // a real asset file (spec.html, *.json, *.png…) → copy its folder so siblings resolve, link by repo path
+                // linked data/code files → render as a syntax-highlighted page in the docs style (not raw)
+                raw.endsWith(".json") && target.isFile ->
+                    "href=\"${renderCodePage(root, out, style, target, "json")}$anchor\""
+                (raw.endsWith(".yaml") || raw.endsWith(".yml")) && target.isFile ->
+                    "href=\"${renderCodePage(root, out, style, target, "yaml")}$anchor\""
+                // a real asset file (spec.html, *.png…) → copy its folder so siblings resolve, link by repo path
                 target.isFile -> run { copyAsset(root, out, target.parentFile); "href=\"$resolved$anchor\"" }
                 // an asset directory with non-.md content (e.g. screens/) → copy it, link by repo path
                 target.isDirectory && target.walkTopDown().any { it.isFile && it.extension != "md" } ->
@@ -178,6 +206,7 @@ abstract class RenderDocs : DefaultTask() {
     }
 
     private fun open(f: File) {
+        if (System.getenv("CI") != null) return   // headless CI (e.g. Pages build): nothing to open into
         val opener = if (System.getProperty("os.name").lowercase().contains("mac")) "open" else "xdg-open"
         exec.exec { commandLine(opener, f.path) }
     }
