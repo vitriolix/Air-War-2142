@@ -50,6 +50,7 @@ abstract class DesignExport : DefaultTask() {
     }
 
     private fun open(f: File) {
+        if (System.getenv("CI") != null) return   // headless CI (e.g. Pages build): nothing to open into
         val opener = if (System.getProperty("os.name").lowercase().contains("mac")) "open" else "xdg-open"
         exec.exec { commandLine(opener, f.path) }
     }
@@ -95,6 +96,7 @@ abstract class DesignImport : DefaultTask() {
     }
 
     private fun open(f: File) {
+        if (System.getenv("CI") != null) return   // headless CI (e.g. Pages build): nothing to open into
         val opener = if (System.getProperty("os.name").lowercase().contains("mac")) "open" else "xdg-open"
         exec.exec { commandLine(opener, f.path) }
     }
