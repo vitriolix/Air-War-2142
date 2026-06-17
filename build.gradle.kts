@@ -60,6 +60,15 @@ tasks.register<Exec>("webConsole")  { description = "Boot the web build and stre
 // Native custom-task helpers (buildSrc) — logic lives in the Gradle task context, not bash.
 tasks.register<RenderDocs>("renderDocs") { group = gameGroup; description = "Render Markdown docs (README + docs/) to HTML and open the index. --file=<path> for one." }
 tasks.register<PrOpen>("openPr")         { group = gameGroup; description = "Open a GitHub PR's page in the browser. --pr=<number|branch> (default: current branch)." }
+tasks.register<DesignExport>("designExport") { group = gameGroup; description = "Code → Claude Design: stage the design/ handoff bundle (refresh assets, open spec, print push steps)." }
+tasks.register<DesignImport>("designImport") { group = gameGroup; description = "Claude Design → Code: review refined files dropped in design/incoming/ and print how to apply them." }
+tasks.register<Exec>("captureScreens") {
+    group = gameGroup
+    description = "Recapture design/screens/*.png from the live web build. HEADED + 1:1 only — never headless (SwiftShader fakes SDF text slivers); see scripts/capture-screens.js."
+    dependsOn("playWebHeadless"); finalizedBy("killServers")   // serve the JS build, then stop it after
+    workingDir = rootDir
+    commandLine("node", "scripts/capture-screens.js")
+}
 tasks.register<SyncDocTasks>("syncDocTasks") { group = gameGroup; description = "Regenerate each doc's Tasks block from TASKS.md (single source). --check fails if stale (CI)." }
 tasks.register<SyncDocTasks>("checkDocTasks") { group = gameGroup; description = "Backstop: fail if any doc's Tasks block is out of sync with TASKS.md. Run by tidyGit/releaseCheckGit."; check.set(true) }
 tasks.register<Exec>("installGitHooks") { group = gameGroup; description = "Point git at the committed hooks (scripts/hooks) — auto-syncs doc task blocks on commit."; workingDir = rootDir; commandLine("git", "config", "core.hooksPath", "scripts/hooks") }

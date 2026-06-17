@@ -75,24 +75,26 @@ abstract class RenderDocs : DefaultTask() {
             return
         }
 
-        // ── all-docs mode: root README → docs/*.md → nested READMEs ──
+        // ── all-docs mode: root README → docs/*.md → nested READMEs, then transitively every
+        //    .md any of them links to (so e.g. design/README.md → design/PROMPT.md gets rendered) ──
         val rootReadme = File(root, "README.md")
+        val mdLink = Regex("]\\(([^)]+\\.md)(?:#[^)]*)?\\)")
         val docs = buildList {
-            if (rootReadme.exists()) {
-                add(rootReadme)
-                // …and everything the README links (relative .md targets that exist), so the
-                // README's links always resolve in the rendered output.
-                Regex("]\\(([^)]+\\.md)(?:#[^)]*)?\\)").findAll(rootReadme.readText()).forEach { m ->
-                    File(root, m.groupValues[1]).takeIf { it.exists() }?.let(::add)
-                }
-            }
-            File(root, "docs").listFiles { f -> f.extension == "md" }?.sortedBy { it.name }?.let(::addAll)
+            val seen = HashSet<String>()
+            val queue = ArrayDeque<File>()
+            fun enqueue(f: File) { if (f.isFile && f.extension == "md" && seen.add(f.canonicalPath)) queue.add(f) }
+            rootReadme.takeIf { it.exists() }?.let(::enqueue)                                       // landing first
+            File(root, "docs").listFiles { f -> f.extension == "md" }?.sortedBy { it.name }?.forEach(::enqueue)
             root.walkTopDown()
                 .onEnter { it.name !in setOf("build", "node_modules", ".git", ".gradle", ".kotlin") }
                 .filter { it.isFile && it.name == "README.md" && it.parentFile != root }
                 .sortedBy { it.path }
-                .forEach { add(it) }
-        }.distinctBy { it.canonicalPath }
+                .forEach(::enqueue)
+            while (queue.isNotEmpty()) {
+                val doc = queue.removeFirst().also(::add)
+                mdLink.findAll(doc.readText()).forEach { m -> enqueue(File(doc.parentFile, m.groupValues[1])) }
+            }
+        }
         if (docs.isEmpty()) throw GradleException("No Markdown docs found (README.md or docs/*.md).")
 
         // Landing page links resolve here; bare directory links (e.g. README's `docs/`) are
@@ -107,7 +109,7 @@ abstract class RenderDocs : DefaultTask() {
             val outFile = File(out, "$slug.html")
             renderOne(src, outFile, styleFile, title)
             val srcDir = src.parentFile.relativeTo(root).path                // "" for root, "docs", "scripts"…
-            relink(outFile, srcDir, landing)                                 // .md cross-links → rendered .html
+            relink(outFile, srcDir, landing, root, out)                      // .md → rendered .html; copy linked assets
             entries.append("<li><span class=\"f\">${esc(rel)}</span>")
                 .append("<a href=\"$slug.html\"><span class=\"t\">${esc(title)}</span></a>")
                 .append("<p>${esc(blurbOf(src))}</p></li>")
@@ -139,21 +141,38 @@ abstract class RenderDocs : DefaultTask() {
         }
     }
 
-    private fun relink(f: File, srcDir: String, landing: String) {
-        var html = f.readText()
-        // .md cross-links → rendered .html. Links are relative to the SOURCE file's dir, so
-        // resolve against srcDir first (a sibling link `0004-x.md` in docs/ → `docs/0004-x.md`),
-        // THEN slugify path→dash to match the flat output filenames (the index `slug`).
-        html = html.replace(Regex("href=\"([^\"#]+)\\.md(#[^\"]*)?\"")) { m ->
-            val resolved = (if (srcDir.isEmpty()) m.groupValues[1] else "$srcDir/${m.groupValues[1]}")
-            val slug = java.nio.file.Paths.get(resolved).normalize().toString()   // collapse ./ and ../
-                .replace(Regex("[/ ]+"), "-")
-            "href=\"$slug.html${m.groupValues[2]}\""
-        }
-        // Relative directory links (e.g. `docs/`) have no rendered target → send to the
-        // landing page. Excludes scheme links (http://…) via the no-colon char class.
-        html = html.replace(Regex("href=\"([^\":#]+)/(#[^\"]*)?\"")) { m ->
-            "href=\"$landing${m.groupValues[2]}\""
+    // Asset folders already copied into build/docs/ (dedupe; one copy per repo-relative dir).
+    private val copiedAssets = HashSet<String>()
+
+    /** Copy a referenced asset dir into build/docs/ at its repo-relative path, once. */
+    private fun copyAsset(root: File, out: File, dir: File) {
+        val rel = dir.relativeTo(root).path
+        if (rel.isEmpty() || !copiedAssets.add(rel)) return     // never copy the repo root; once each
+        dir.copyRecursively(File(out, rel), overwrite = true) { _, _ -> OnErrorAction.SKIP }
+    }
+
+    private fun relink(f: File, srcDir: String, landing: String, root: File, out: File) {
+        // Links in the source .md are relative to the SOURCE file's dir; resolve against srcDir first,
+        // then route each kind. The rendered .html files are flat (path→dash slug), so .md links become
+        // those slugs; real assets are copied into build/docs/ at their repo-relative path and linked there.
+        val html = f.readText().replace(Regex("href=\"([^\"#]+)(#[^\"]*)?\"")) { m ->
+            val raw = m.groupValues[1]; val anchor = m.groupValues[2]
+            if (raw.contains(":") || raw.startsWith("/")) return@replace m.value   // leave http(s):/mailto:/absolute
+            val resolved = java.nio.file.Paths.get(if (srcDir.isEmpty()) raw else "$srcDir/$raw")
+                .normalize().toString()                                            // collapse ./ and ../
+            val target = File(root, resolved)
+            when {
+                // .md cross-link → its rendered (flat, slugified) .html
+                raw.endsWith(".md") ->
+                    "href=\"${resolved.removeSuffix(".md").replace(Regex("[/ ]+"), "-")}.html$anchor\""
+                // a real asset file (spec.html, *.json, *.png…) → copy its folder so siblings resolve, link by repo path
+                target.isFile -> run { copyAsset(root, out, target.parentFile); "href=\"$resolved$anchor\"" }
+                // an asset directory with non-.md content (e.g. screens/) → copy it, link by repo path
+                target.isDirectory && target.walkTopDown().any { it.isFile && it.extension != "md" } ->
+                    run { copyAsset(root, out, target); "href=\"$resolved$anchor\"" }
+                // bare dir with no rendered target (e.g. README's `docs/`) → landing page
+                else -> "href=\"$landing$anchor\""
+            }
         }
         f.writeText(html)
     }
