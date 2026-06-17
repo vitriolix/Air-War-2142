@@ -8,7 +8,7 @@ plugins {
 // API reference (Dokka — the Kotlin Javadoc). Output to the root build/api/ so the README
 // link (build/api/index.html) is short. Generate via the root `apiDocs` task.
 tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
-    moduleName.set("Air War 2142")
+    moduleName.set("Air-War-2142")
     outputDirectory.set(rootProject.layout.buildDirectory.dir("api"))
 }
 
