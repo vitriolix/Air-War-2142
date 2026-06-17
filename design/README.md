@@ -46,6 +46,7 @@ project memory.)
 ```
 design/
   PROMPT.md              # paste into a Claude Design project — the full brief (read this first)
+  DROPS.md               # append-only log of every Code → Design drop (what we sent, when, why)
   design-tokens.json     # SINGLE SOURCE OF TRUTH: colors, type scale, canvas dims, sprite table
   spec.html              # CURRENT-STATE baseline: real screenshots + real sprite gallery (open in a browser)
   screens/               # the raw screenshots spec.html embeds (Menu/HUD/Paused/Settings)
@@ -74,7 +75,9 @@ design/
 **Code → Design.** Run `./gradlew designExport`. It stages the bundle and opens the spec. Then open a
 Claude Design project, paste `PROMPT.md`, and attach `design-tokens.json`, `spec.html` (+ `screens/`),
 `refinement-mockup.html`, and `assets/sprites.png` + `assets/sprites.txt`. (If you have the
-`/design-sync` skill, it can push `design/**` to your claude.ai/design project for you.)
+`/design-sync` skill, it can push `design/**` to your claude.ai/design project for you.) Record
+each push in [`DROPS.md`](DROPS.md) (newest entry at the bottom) so the drop history never lags the
+project.
 
 **Design → Code.** Pull the refined component files into `design/incoming/` (download from the project, or
 let `/design-sync` write them there), then run `./gradlew designImport` to review. Apply changes by:
