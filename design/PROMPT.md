@@ -10,8 +10,19 @@
 
 ## 1. Your task
 
-You are designing the UI for **Air War 2142**, a vertically-scrolling arcade shoot-'em-up (a modern
-"1942" clone) built in **Kotlin + KorGE**, shipping to **web (JS/Wasm), JVM desktop, and Android**.
+You are designing the UI for **Air War 2142**, a vertically-scrolling arcade shoot-'em-up built in
+**Kotlin + KorGE**, shipping to **web (JS/Wasm), JVM desktop, and Android**.
+
+**Setting & theme (the visual north star).** Air War 2142 is *not* a straight remake of the 1942
+arcade game — it's an **alt-history reimagining**. In this timeline WWII-era air warfare never gave
+way to jets-and-missiles doctrine; instead the prop-plane dogfight, the flak, the carrier strike and
+the squadron formation just *kept evolving* for two more centuries. The result is a **fusion of eras**
+— think steampunk's past/future blend, but anchored to WWII: weathered riveted airframes and
+roundel-style insignia alongside energy weapons, sci-fi HUD readouts, and impossible ordnance. The
+north star is "1942 if it had advanced 200 years without ever abandoning its roots" — lean into that
+tension (hand-built/retro **and** futuristic), not clean modern-military and not pure sci-fi. NOTE:
+the *current* UI doesn't express this yet — it's the direction to **refine toward**, never the
+reproduce baseline.
 
 Do this in two passes:
 

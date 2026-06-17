@@ -1,6 +1,6 @@
 # Air War 2142
 
-A top-down arcade shoot-'em-up in the style of classic 1942, written in **Kotlin Multiplatform** on the **KorGE** game engine. Runs on desktop (JVM), Android, and the web (JS + WebAssembly); iOS is planned.
+A top-down arcade shoot-'em-up — an **alt-history reimagining** of the WWII air war (not a 1942 clone): warfare that kept evolving for two centuries without abandoning its prop-plane roots, fusing riveted WWII airframes with energy weapons and sci-fi tech. Written in **Kotlin Multiplatform** on the **KorGE** game engine. Runs on desktop (JVM), Android, and the web (JS + WebAssembly); iOS is planned.
 
 > **Status:** playable. Being incrementally re-architected toward a plugin/ECS engine so the whole game is moddable — see [Documentation](#documentation).
 

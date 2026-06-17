@@ -4,6 +4,12 @@ This folder is the handoff workspace between the **codebase** (Kotlin/KorGE UI) 
 **[Claude Design](https://claude.ai/design)**, where we mock up and refine the UI as HTML/CSS
 components before porting changes back into the scenes.
 
+**The game:** Air War 2142 is an **alt-history reimagining** of the WWII air-war shmup — not a
+1942 clone. In its timeline WWII-style warfare never gave way to jets/missiles; it kept evolving
+for two centuries into a fusion of eras (riveted prop-planes + energy weapons + sci-fi HUDs),
+steampunk-style but anchored to WWII. See `PROMPT.md` §1 for the full theme — it's the direction
+to refine *toward*, not what the current screens show.
+
 This bundle is the **shared UI spec for both sides**: Claude Design refines against it, and
 Claude Code ports changes back into the Kotlin scenes from it. One source of truth, not two.
 
