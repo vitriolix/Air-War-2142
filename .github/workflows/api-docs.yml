@@ -1,18 +1,22 @@
-name: API docs
+name: Docs (API reference + guides)
 
-# Render the Kotlin API reference (Dokka HTML) and publish it to GitHub Pages.
+# Render the Kotlin API reference (Dokka HTML) AND the Markdown docs site (pandoc), then publish
+# both to GitHub Pages: the API reference at the root, the guides/spec at /docs/.
 # One-time setup in the repo: Settings → Pages → Build and deployment → Source = "GitHub Actions".
-# Live at: https://vitriolix.github.io/Air-War-2142/
+# Live at: https://vitriolix.github.io/Air-War-2142/  (API)  ·  https://vitriolix.github.io/Air-War-2142/docs/  (guides)
 
 on:
   push:
     branches: [main]
-    # Only rebuild when something that affects the API docs changes — skip doc/rule/script-only
-    # merges. (workflow_dispatch below still allows a manual rebuild anytime.)
+    # Rebuild when the API source/build changes, OR when any doc/asset that the guides site
+    # renders changes. (workflow_dispatch still allows a manual rebuild anytime.)
     paths:
       - 'composeApp/src/**'
       - '**/*.gradle.kts'
       - 'gradle/libs.versions.toml'
+      - '**/*.md'
+      - 'design/**'
+      - 'buildSrc/**'
       - '.github/workflows/api-docs.yml'
   workflow_dispatch:
 
@@ -49,13 +53,27 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
-      - name: Render API docs (Dokka HTML → build/api)
-        run: ./gradlew renderApiDocs --no-daemon --stacktrace
+      # renderDocs shells out to pandoc; the guides site needs it.
+      - name: Install pandoc
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+
+      # designExport refreshes design/assets/ from the committed sprite atlas so spec.html's
+      # gallery resolves; renderApiDocs → build/api; renderDocs → build/docs (open() is a
+      # no-op under CI — the runner sets CI=true automatically).
+      - name: Render API reference + docs site
+        run: ./gradlew designExport renderApiDocs renderDocs --no-daemon --stacktrace
+
+      - name: Assemble Pages site (API at root, guides at /docs/)
+        run: |
+          mkdir -p public
+          cp -r build/api/. public/
+          mkdir -p public/docs
+          cp -r build/docs/. public/docs/
 
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: build/api
+          path: public
 
   deploy:
     needs: build
