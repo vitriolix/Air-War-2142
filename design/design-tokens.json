@@ -40,9 +40,9 @@
   "typography": {
     "$source": "All sizes are the KorGE `text(string, size, color)` size argument in logical px. KorGE default bitmap font (system debug font) is the legacy renderer; the SHIPPED fonts are defined in `fonts` below.",
     "fonts": {
-      "$comment": "Chosen fonts for the 1940s-meets-2142 brief. Both SIL OFL 1.1 — free to embed & ship. Self-hosted (latin-subset woff2) under assets/fonts/; @font-face declared in styles.css and inline in each screen, so everything works offline.",
-      "title":   { "family": "Wallpoet",     "weights": [400],                 "role": "hero title, overlay heads, settings title", "license": "OFL-1.1", "files": ["assets/fonts/Wallpoet-400.woff2"] },
-      "content": { "family": "Chakra Petch", "weights": [400,500,600,700],     "role": "HUD, buttons, body, settings rows, hints",     "license": "OFL-1.1", "files": ["assets/fonts/ChakraPetch-400.woff2","assets/fonts/ChakraPetch-500.woff2","assets/fonts/ChakraPetch-600.woff2","assets/fonts/ChakraPetch-700.woff2"] },
+      "$comment": "Chosen fonts for the 1940s-meets-2142 brief. Both SIL OFL 1.1 — free to embed & ship. Self-hosted TTF under assets/fonts/; @font-face declared in styles.css and inline in each screen, so everything works offline. The KorGE build bundles these same TTFs at composeApp/src/commonMain/resources/fonts/ (title 400 + content 600 today; see render/Fonts.kt).",
+      "title":   { "family": "Wallpoet",     "weights": [400],                 "role": "hero title, overlay heads, settings title", "license": "OFL-1.1", "files": ["assets/fonts/Wallpoet-400.ttf"] },
+      "content": { "family": "Chakra Petch", "weights": [400,500,600,700],     "role": "HUD, buttons, body, settings rows, hints",     "license": "OFL-1.1", "files": ["assets/fonts/ChakraPetch-400.ttf","assets/fonts/ChakraPetch-500.ttf","assets/fonts/ChakraPetch-600.ttf","assets/fonts/ChakraPetch-700.ttf"] },
       "cssFallback": "'Courier New', monospace"
     },
     "scale": {
