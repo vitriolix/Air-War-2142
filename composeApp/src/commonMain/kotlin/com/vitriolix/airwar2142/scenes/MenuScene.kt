@@ -13,6 +13,7 @@ import com.vitriolix.airwar2142.CANVAS_HEIGHT
 import com.vitriolix.airwar2142.logic.BackgroundIsland
 import com.vitriolix.airwar2142.logic.GameEngine
 import com.vitriolix.airwar2142.logic.GameState
+import com.vitriolix.airwar2142.render.Fonts
 
 class MenuScene(
     private val engine: GameEngine,
@@ -23,6 +24,7 @@ class MenuScene(
 
     override suspend fun SContainer.sceneMain() {
         engine.returnToMenu()
+        Fonts.load()
 
         // Background, view-based (was a per-frame updateShape of the whole scene):
         //   ocean gradient drawn once; each island is its own Graphics drawn once and
@@ -32,8 +34,8 @@ class MenuScene(
             graphics { }.also { g -> g.updateShape { drawMenuIslandCentered(isl) } }
         }
 
-        text("AIR WAR", 56.0, Colors["#00FFFF"]).position(90.0, 200.0)
-        text("2142",  184.0, Colors["#FFCC00"]).position(80.0, 260.0)
+        text("AIR WAR", 56.0, Colors["#00FFFF"], font = Fonts.title).position(90.0, 200.0)
+        text("2142",  184.0, Colors["#FFCC00"], font = Fonts.title).position(80.0, 260.0)
 
         val fc = FocusController()
 
@@ -46,7 +48,7 @@ class MenuScene(
             nav.changeTo { SettingsScene(engine, nav) }
         }
 
-        text("WASD to move  •  Space to fire  •  R to loop", 31.0, RGBA(255, 255, 255, 128))
+        text("WASD to move  •  Space to fire  •  R to loop", 31.0, RGBA(255, 255, 255, 128), font = Fonts.content)
             .position(60.0, CANVAS_HEIGHT - 60.0)
 
         // Focus caret created last so it renders above the buttons.
@@ -66,7 +68,7 @@ class MenuScene(
 
     private fun SContainer.menuButton(fc: FocusController, label: String, x: Double, y: Double, action: suspend () -> Unit) {
         solidRect(840.0, 80.0, RGBA(0, 0, 0, 85)).position(x, y)
-        text(label, 46.0, Colors.WHITE).position(x + 24.0, y + 14.0)
+        text(label, 46.0, Colors.WHITE, font = Fonts.content).position(x + 24.0, y + 14.0)
         // Near-invisible full-size hit area on top — catches clicks on both text and grey padding
         solidRect(840.0, 80.0, RGBA(0, 0, 0, 1)).position(x, y).onClickSuspend(views.coroutineContext) { action() }
         // Caret sits just left of the button, vertically aligned with the label.
