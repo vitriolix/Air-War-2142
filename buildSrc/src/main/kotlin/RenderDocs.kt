@@ -148,17 +148,20 @@ abstract class RenderDocs : DefaultTask() {
 
     /**
      * Render a linked data/code file (e.g. design-tokens.json) as a syntax-highlighted HTML page in
-     * the docs style, instead of serving it raw. Returns the page's flat slug (the rewritten href).
+     * the docs style, instead of serving it raw. Keeps the file's repo-relative path (just appends
+     * .html) so the URL mirrors the source — design/design-tokens.json → design/design-tokens.json.html.
+     * Returns the rewritten href.
      */
     private fun renderCodePage(root: File, out: File, style: File, target: File, lang: String): String {
         val rel = target.relativeTo(root).path
-        val slug = rel.replace(Regex("[/. ]+"), "-").trim('-') + ".html"   // design/design-tokens.json → design-design-tokens-json.html
+        val href = rel.replace(File.separatorChar, '/') + ".html"          // forward slashes for the HTML href
         if (renderedCode.add(rel)) {
+            val outFile = File(out, "$rel.html").apply { parentFile?.mkdirs() }
             val md = File.createTempFile("code", ".md").apply { writeText("```$lang\n${target.readText()}\n```\n") }
-            renderOne(md, File(out, slug), style, rel)                      // pandoc highlights the fenced block
+            renderOne(md, outFile, style, rel)                              // pandoc highlights the fenced block
             md.delete()
         }
-        return slug
+        return href
     }
 
     // Asset folders already copied into build/docs/ (dedupe; one copy per repo-relative dir).
