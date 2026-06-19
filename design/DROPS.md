@@ -3,7 +3,9 @@
 An append-only log of every **drop**: a bundle of files we push from this repo into the
 [Claude Design](https://claude.ai/design) project. Each `designExport` / `DesignSync` push that
 seeds or updates the project gets one entry here, newest at the bottom, so we have a durable record
-of *what* we sent, *when*, and *why* — independent of the Design project's own history.
+of *what* we sent, *when*, and *why* — independent of the Design project's own history. Each drop's
+exact bundle is also **snapshotted (committed) under `design/drops/drop-NN-<slug>/`** — a byte-for-byte
+copy of the pushed files (project-path layout), so the contents are recoverable, not just the manifest.
 
 This is the Code→Design half of the round-trip's change-note convention (the Design→Code half lands
 in `incoming/` and is reviewed via `./gradlew designImport`). When you send a drop, add an entry
@@ -16,6 +18,7 @@ in `incoming/` and is reviewed via `./gradlew designImport`). When you send a dr
 - **Trigger** — why this drop went out (seed, new-screen request, token change, re-sync after a code change…).
 - **Contents** — the files pushed, by their **project path** (drops mirror the `design/` tree without the `design/` prefix).
 - **Provenance** — the `DesignSync` `planId` (or `designExport` invocation) for audit.
+- **Archive** — path to the committed byte-for-byte snapshot of the pushed bundle (`design/drops/drop-NN-<slug>/`).
 - **Notes** — what we expect back, what changed vs the previous drop, caveats.
 
 ---
@@ -38,6 +41,9 @@ in `incoming/` and is reviewed via `./gradlew designImport`). When you send a dr
 - **Provenance:** `DesignSync` `planId` `plan_dec21c04883c4ee2_85dacf6f6620` (`write_files`, 11 written).
   Project tree mirrors `design/` (the `design/` prefix dropped) so the relative links inside
   `spec.html` / `PROMPT.md` resolve in the project.
+- **Archive:** [`design/drops/drop-01-seed/`](drops/drop-01-seed/) — byte-for-byte snapshot of the
+  pushed bundle, reconstructed from the push-time commit `45276af` (pre-fonts `design-tokens.json`,
+  pre-DROPS `README.md`) + the sprite atlas. This is the bundle as Design first received it.
 - **Notes:** No screens generated yet at drop time — this is inputs only. Expected back: a reproduce
   pass (one self-contained HTML per screen under `screens/`, `@dsCard` markers, CSS-var tokens),
   pulled into `incoming/` for `designImport`. Game Over / Victory screenshots are not in the bundle
