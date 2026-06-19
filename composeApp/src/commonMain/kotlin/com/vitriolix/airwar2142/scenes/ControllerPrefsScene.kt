@@ -60,8 +60,9 @@ class ControllerPrefsScene(
             val cy = 290.0 + idx * 110.0
             val listening = listeningRow == idx
             if (listening) solidRect(800.0, 80.0, RGBA(0, 229, 255, 40)).position(100.0, cy)
-            text(label, 36.0, if (listening) Colors["#00E5FF"] else Colors.WHITE, font = Fonts.content)
-                .position(116.0, cy + 18.0)
+            val rowLabel = text(label, 36.0, if (listening) Colors["#00E5FF"] else Colors.WHITE, font = Fonts.content)
+            rowLabel.x = 116.0
+            rowLabel.y = cy + (80.0 - rowLabel.height) / 2.0
             // Chip: right-anchored, right edge 32px in from row right (x=868)
             val chipW = if (listening) 340.0 else 120.0
             val chipX = 868.0 - chipW
@@ -111,7 +112,7 @@ class ControllerPrefsScene(
         }
         val incAct: suspend () -> Unit = {
             val d = (deadzone + 0.05f).coerceAtMost(0.50f)
-            nav.changeTo { ControllerPrefsScene(engine, nav, fromGame, fireBinding, rollBinding, pauseBinding, invertY, d, -1, 5) }
+            nav.changeTo { ControllerPrefsScene(engine, nav, fromGame, fireBinding, rollBinding, pauseBinding, invertY, d, -1, 4) }
         }
 
         solidRect(80.0, 60.0, Colors["#FF9900"]).position(100.0, 840.0)
@@ -132,9 +133,8 @@ class ControllerPrefsScene(
         incText.y = 840.0 + (60.0 - incText.height) / 2.0
         solidRect(80.0, 60.0, RGBA(0, 0, 0, 1)).position(820.0, 840.0)
             .onClickSuspend(views.coroutineContext) { incAct() }
-        fc.add(778.0, 840.0 + (60.0 - 44.0) / 2.0, incAct, leftAct = decAct, rightAct = incAct)
 
-        // BACK button — focus 6
+        // BACK button — focus 5
         val backY = CANVAS_HEIGHT - 200.0
         val backAct: suspend () -> Unit = { nav.changeTo { SettingsScene(engine, nav, fromGame, 7) } }
         solidRect(380.0, 80.0, RGBA(255, 255, 255, 20)).position(100.0, backY)
