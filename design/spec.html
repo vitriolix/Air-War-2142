@@ -81,14 +81,20 @@
       "[ P ] Resume flight" green; "SETTINGS &amp; INPUTS" white; "[ Q ] Abandon mission" faint.</div>
   </div>
   <div class="shot">
-    <div class="cap">4 — Settings (from game)</div>
+    <div class="cap">4 — Settings</div>
     <img src="screens/4-settings.png" alt="Settings">
-    <div class="note">#1E272C bg. "FLIGHT CONTROLS" 72px cyan title. 3 steering rows (active = cyan/teal + gold caret).
-      Orange ± steppers, green/red SFX &amp; DEBUG toggles, green "RESUME GAME" (or red "SAVE &amp; EXIT" from menu).</div>
+    <div class="note">#1E272C bg. "SETTINGS" 72px cyan title. 3 steering rows (active = cyan/teal + gold caret).
+      Orange ± steppers. SFX toggle: green ON / red OFF. DEBUG OVERLAY toggle: green ON / <b>grey #999999 OFF</b>.
+      CONTROLLER nav row (ghost). Ghost exit button — "RESUME GAME" or "SAVE &amp; EXIT".</div>
+  </div>
+  <div class="shot">
+    <div class="cap">5 — Controller Prefs</div>
+    <img src="screens/5-controller-prefs.png" alt="Controller Prefs">
+    <div class="note">#1E272C bg. "CONTROLLER" 72px cyan title. Three binding rows (FIRE / ROLL / PAUSE) each with a
+      right-anchored chip (120×56 translucent, label centered). INVERT Y toggle: green ON / grey OFF.
+      STICK DEAD ZONE label + [−][track][+] slider (Left/Right keys adjust). Ghost BACK button.</div>
   </div>
 </div>
-<p class="subtitle" style="margin-top:14px;">⚠ Observed engine artifact (not a design choice): glyphs with vertical strokes (T/L/I)
-render slightly doubled in the JS build — visible as "FLIGHTi CONTiROLiS". Logged for the team; ignore for design intent.</p>
 
 <h2>REAL SPRITES (the actual atlas — these are the planes)</h2>
 <p class="subtitle">Cropped live from <code>assets/sprites.png</code> using <code>assets/sprites.txt</code>. Shown at ½ atlas scale.
@@ -104,8 +110,9 @@ render slightly doubled in the JS build — visible as "FLIGHTi CONTiROLiS". Log
     <div><span class="sw" style="background:#FFCC00"></span>#FFCC00 — "2142" title, focus caret, score/credit values</div>
     <div><span class="sw" style="background:#FF9900"></span>#FF9900 — LOOPS label, ± stepper fills</div>
     <div><span class="sw" style="background:#00FF88"></span>#00FF88 — fuel/energy, victory, SFX-on, resume</div>
-    <div><span class="sw" style="background:#FF3333"></span>#FF3333 — toggle-off (SFX/debug OFF)</div>
-    <div><span class="sw" style="background:#E53935"></span>#E53935 — game over / danger / "SAVE &amp; EXIT"</div>
+    <div><span class="sw" style="background:#FF3333"></span>#FF3333 — toggle-off (SFX OFF)</div>
+    <div><span class="sw" style="background:#999999"></span>#999999 — toggle-neutral-off (DEBUG OVERLAY OFF, INVERT Y OFF)</div>
+    <div><span class="sw" style="background:#E53935"></span>#E53935 — game over / danger</div>
     <div><span class="sw" style="background:#1E272C"></span>#1E272C — settings background</div>
     <div class="muted" style="margin-top:8px;">Ocean gradient #0F2027→#203A43→#2C5364 · island sand #E2D4A8 / grass #2E8B57 / dark #1E5B37</div>
   </div>

@@ -69,8 +69,11 @@ secondary), `--green #00FF88` (fuel, victory), `--red #E53935` (game-over/danger
 `--dark #1E272C` (settings/modal bg). The ocean gradient is `#0F2027 → #203A43 → #2C5364` top-to-bottom.
 Islands: sand `#E2D4A8`, grass `#2E8B57`, foliage `#1E5B37`.
 
-**Type scale** (logical px, heavy weight; KorGE default bitmap font → render with a heavy monospace
-like Courier New / ui-monospace): title-gold **184**, title-cyan / paused-head **56**,
+**Fonts** — the game ships two TTFs (SIL OFL): **Wallpoet** (titles/heads — `Fonts.title`) and
+**Chakra Petch 600** (all content — `Fonts.content`). Use these exact faces in mockups so spacing
+and weight match the live build.
+
+**Type scale** (logical px; KorGE sizes are logical px, not CSS pt): title-gold **184**, title-cyan / paused-head **56**,
 victory-head **82**, gameover-head **66**, score **51**, menu-button **46**, settings-exit **41**,
 overlay-sub / settings-item **36**, hud-pause / fighters / menu-hint **31**, score/loops label **28**,
 fuel **26**, debug **20**.
@@ -121,21 +124,35 @@ Full-canvas black at **alpha 0.8**. Left-aligned:
 - **"[ ENTER ]  Next mission"** 36px `#00FF88` at (80,770)
 - **"[ Q ]  Return to HQ"** 36px white at (80,840)
 
-### 5.6 Settings / Flight Controls — `SettingsScene.kt`
+### 5.6 Settings — `SettingsScene.kt`
 Solid `#1E272C` background (1000×1500). All flat `solidRect` + text — no panels. Gold focus caret
 (18×44 `#FFCC00` bar) sits at x≈48 left of the focused control.
-- Title **"FLIGHT CONTROLS"** 72px `#00E5FF` at (100,80).
+- Title **"SETTINGS"** 72px `#00E5FF` (Wallpoet) at (100,80).
 - Section label **"STEERING MODE"** 36px `RGBA(255,255,255,178)` at (100,200).
-- Three steering rows (800×80 at x=100, y = 290/400/510), each a rect + 36px label at (116, cy+18):
+- Three steering rows (800×80 at x=100, y = 290/400/510), each a rect + 36px label (Chakra Petch):
   - **"KEYBOARD  (WASD / Space / R)"**, **"TILT  (Accelerometer — stub)"**, **"TOUCH  (Drag / Double-tap to roll)"**
   - active row: fill `RGBA(0,229,255,40)`, label `#00E5FF`; inactive: fill `RGBA(255,255,255,20)`, label white.
 - **"SENSITIVITY: 1.0x"** 36px white at (100,660). Two **opaque orange `#FF9900`** stepper buttons (80×60)
   at (100,710)/(210,710) with white **"  -  "** / **"  +  "** labels.
-- **SFX toggle** (280×70 at (100,840)): label **"SFX: ON"**/**"SFX: OFF"** 36px; on = `#00FF88`, off = `#FF3333`;
-  fill = that color at alpha 60.
-- **Debug toggle** (440×70 at (100,960)): **"DEBUG OVERLAY: ON/OFF"**, same green/red on/off scheme.
-- **Exit button** (380×80 near bottom, y = ch−200): from a game → **opaque green `#00FF88` "RESUME GAME"**;
-  from the menu → **opaque red `#E53935` "SAVE & EXIT"**. Label 41px white at (130, backY+12).
+- **SFX toggle** (280×70 at (100,840)): label **"SFX: ON"**/**"SFX: OFF"** 36px; on = `#00FF88`, off = `#FF3333`; fill = color at alpha 60.
+- **DEBUG OVERLAY toggle** (440×70 at (100,960)): **"DEBUG OVERLAY: ON/OFF"** 36px; on = `#00FF88`, **off = `#999999`** (grey, not red); fill = color at alpha 60.
+- **CONTROLLER nav row** (800×80 ghost `RGBA(255,255,255,20)` at (100,1090)): label **"CONTROLLER"** 36px white. Navigates to §5.7.
+- **Exit button** (380×80 ghost `RGBA(255,255,255,20)` at (100, ch−200)): label **"RESUME GAME"** (from game) or **"SAVE & EXIT"** (from menu), 41px white. Both states use the same ghost fill — no colored prominence.
+
+### 5.7 Controller Preferences — `ControllerPrefsScene.kt`
+Solid `#1E272C` background (1000×ch). Same gold focus caret pattern as §5.6.
+- Title **"CONTROLLER"** 72px `#00E5FF` (Wallpoet) at (100,80).
+- Section label **"GAMEPAD BINDINGS"** 36px `RGBA(255,255,255,178)` at (100,200).
+- Three binding rows (800×80 ghost at x=100, y = 290/400/510), label 36px white at (116, cy+center):
+  - **"FIRE"**, **"ROLL"**, **"PAUSE"** — each has a right-anchored **chip** (120×56 ghost `RGBA(255,255,255,20)`, right edge at x=868). Chip label 36px `#00E5FF`, horizontally + vertically centered within the chip.
+  - Default chip values: **"A"** / **"RB"** / **"Start"**.
+  - Listening state (rebinding in progress): row fill `RGBA(0,229,255,40)`, chip expands to 340px wide, label becomes **"PRESS A BUTTON…"**; centered hint **"PRESS ESC TO CANCEL"** 36px `RGBA(255,255,255,128)` at y=1210.
+- **INVERT Y toggle** (280×70 at (100,640)): label **"INVERT Y: ON"**/**"INVERT Y: OFF"** 36px; on = `#00FF88`, off = `#999999`; fill = color at alpha 60.
+- **STICK DEAD ZONE** label 36px white at (100,760): **"STICK DEAD ZONE: 0.15"**. Below it:
+  - **[−]** button (80×60 opaque `#FF9900`) at (100,840); **[+]** button same at (820,840). White **"  −  "** / **"  +  "** labels, vertically centered.
+  - Track (620×20 ghost `RGBA(255,255,255,20)`) at (190,860); cyan fill from left proportional to value.
+  - Left/Right arrow keys (and d-pad) adjust value when the slider row is focused.
+- **BACK button** (380×80 ghost `RGBA(255,255,255,20)` at (100, ch−200)): label **"BACK"** 41px white, centered.
 
 ## 6. KorGE mapping — what's reproducible (constraints)
 
@@ -144,16 +161,26 @@ We render this UI back in KorGE, so refinements must map to its primitives. Keep
 | Want | KorGE primitive | Notes |
 |------|-----------------|-------|
 | Rectangle / panel | `solidRect(w, h, RGBA)` | flat fill; **no rounded corners on solidRect** |
-| Rounded / custom shape | `graphics { fill(RGBA){ roundRect(...) } }` | fine, but costs a tessellation — use sparingly |
-| Text | `text(string, sizePx, color)` | default bitmap font; **left-anchored**, no rich wrapping |
-| Gradient | `LinearGradientPaint` in a `graphics{}` | used for the ocean; OK for large static fills |
+| Rounded / custom shape | `graphics { fill(RGBA){ roundRect(...) } }` | costs a tessellation per frame — use sparingly, never in tight loops |
+| Text | `text(string, sizePx, color, font)` | Wallpoet or Chakra Petch 600; **left-anchored**; no rich wrapping |
+| Gradient | `LinearGradientPaint` in a `graphics{}` | OK for large static fills (ocean BG); avoid per-frame regeneration |
 | Color | `RGBA(r,g,b,a)` a=0-255, or `Colors["#RRGGBB"]` | |
 | Sprite | atlas `Image` | from `sprites.png`; draw at `displayW/H`, scale linearly |
+| Particle burst | `addUpdater` + pooled `solidRect`s | keep total active particles ≤ 200 on web; sustained emitters are more expensive than one-shot bursts — **prefer a short flash over a looping effect** if in doubt |
+| Shader / glow | KorGE fragment DSL (`Filter`) | available but costly on Android mid-range; flag any glow/blur request so we can decide whether to fake with a layered alpha rect instead |
 
 **Not available / avoid:** CSS `backdrop-filter` / true gaussian blur (no glass blur — fake with a
-flat translucent fill), drop-shadows on text, web fonts, flexbox auto-layout (we position by absolute
+flat translucent fill), drop-shadows on text, flexbox auto-layout (we position by absolute
 logical coords). If a refinement needs one of these, **flag it explicitly** so we decide whether to
 fake it or extend the engine. Center-anchored text needs manual offset — prefer left-anchored.
+
+**Draw-call budget:** each `solidRect` and `text()` = one draw call. UI screens are fine at the
+current element counts (~20–30 per screen). Avoid proposing elaborate tiled or per-pixel backgrounds.
+
+**Text vertical centering:** `text.height` (font line-height) varies ±4 px between the JVM and
+web/JS backends for the same font and size. Do not spec pixel-precise vertical positions for button
+labels — the code centers by measured height at runtime. Spec "vertically centered in the button"
+and let the engine resolve it.
 
 ## 7. Deliverable format (so `designImport` can consume it)
 
