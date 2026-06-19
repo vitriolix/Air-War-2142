@@ -66,8 +66,9 @@ class ControllerPrefsScene(
             val chipW = if (listening) 340.0 else 120.0
             val chipX = 868.0 - chipW
             solidRect(chipW, 56.0, RGBA(255, 255, 255, 20)).position(chipX, cy + 12.0)
-            text(if (listening) "PRESS A BUTTON…" else chip, 36.0, Colors["#00E5FF"], font = Fonts.content)
-                .position(chipX + 8.0, cy + 18.0)
+            val chipLabel = text(if (listening) "PRESS A BUTTON…" else chip, 36.0, Colors["#00E5FF"], font = Fonts.content)
+            chipLabel.x = chipX + (chipW - chipLabel.width) / 2.0
+            chipLabel.y = cy + 18.0
             val listenAct = rebuild(idx, idx)
             solidRect(800.0, 80.0, RGBA(0, 0, 0, 1)).position(100.0, cy)
                 .onClickSuspend(views.coroutineContext) { listenAct() }
@@ -93,10 +94,10 @@ class ControllerPrefsScene(
         }
         solidRect(280.0, 70.0, invFill).position(100.0, 640.0)
         text(if (invertY) "INVERT Y: ON" else "INVERT Y: OFF", 36.0, invColor, font = Fonts.content)
-            .position(116.0, 652.0)
+            .position(116.0, 657.0)
         solidRect(280.0, 70.0, RGBA(0, 0, 0, 1)).position(100.0, 640.0)
             .onClickSuspend(views.coroutineContext) { invAct() }
-        fc.add(caretX, 652.0, invAct)
+        fc.add(caretX, 657.0, invAct)
 
         // Deadzone label + [−][track][+] slider — focus 4 (−) and 5 (+)
         val dzFrac = (deadzone * 100 + 0.5f).toInt()
@@ -111,20 +112,20 @@ class ControllerPrefsScene(
             nav.changeTo { ControllerPrefsScene(engine, nav, fromGame, fireBinding, rollBinding, pauseBinding, invertY, d, -1, 4) }
         }
         solidRect(80.0, 60.0, Colors["#FF9900"]).position(100.0, 810.0)
-        text("  -  ", 36.0, Colors.WHITE, font = Fonts.content).position(100.0, 818.0)
+        text("  -  ", 36.0, Colors.WHITE, font = Fonts.content).position(100.0, 824.0)
         solidRect(80.0, 60.0, RGBA(0, 0, 0, 1)).position(100.0, 810.0)
             .onClickSuspend(views.coroutineContext) { decAct() }
-        fc.add(caretX, 818.0, decAct)
+        fc.add(caretX, 824.0, decAct)
 
         val incAct: suspend () -> Unit = {
             val d = (deadzone + 0.05f).coerceAtMost(0.50f)
             nav.changeTo { ControllerPrefsScene(engine, nav, fromGame, fireBinding, rollBinding, pauseBinding, invertY, d, -1, 5) }
         }
         solidRect(80.0, 60.0, Colors["#FF9900"]).position(820.0, 810.0)
-        text("  +  ", 36.0, Colors.WHITE, font = Fonts.content).position(820.0, 818.0)
+        text("  +  ", 36.0, Colors.WHITE, font = Fonts.content).position(820.0, 824.0)
         solidRect(80.0, 60.0, RGBA(0, 0, 0, 1)).position(820.0, 810.0)
             .onClickSuspend(views.coroutineContext) { incAct() }
-        fc.add(778.0, 818.0, incAct)
+        fc.add(778.0, 824.0, incAct)
 
         // BACK button — focus 6
         val backY = CANVAS_HEIGHT - 200.0
