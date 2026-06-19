@@ -27,7 +27,13 @@ interface EscapeHandler {
  * gamepad, or click/hover to them identically.
  */
 class FocusController {
-    private class Item(val caretX: Double, val caretY: Double, val activate: suspend () -> Unit)
+    private class Item(
+        val caretX: Double,
+        val caretY: Double,
+        val activate: suspend () -> Unit,
+        val leftAct: (suspend () -> Unit)? = null,
+        val rightAct: (suspend () -> Unit)? = null,
+    )
 
     /** The marker view; assign after items are registered so it can be created on top. */
     var caret: View? = null
@@ -37,8 +43,14 @@ class FocusController {
         private set
 
     /** Register a focusable item; returns its index. caretX/Y is where the caret sits. */
-    fun add(caretX: Double, caretY: Double, activate: suspend () -> Unit): Int {
-        items += Item(caretX, caretY, activate)
+    fun add(
+        caretX: Double,
+        caretY: Double,
+        activate: suspend () -> Unit,
+        leftAct: (suspend () -> Unit)? = null,
+        rightAct: (suspend () -> Unit)? = null,
+    ): Int {
+        items += Item(caretX, caretY, activate, leftAct, rightAct)
         return items.size - 1
     }
 
@@ -63,7 +75,7 @@ class FocusController {
         refresh()
     }
 
-    suspend fun activate() {
-        items.getOrNull(index)?.activate?.invoke()
-    }
+    suspend fun activate()      { items.getOrNull(index)?.activate?.invoke() }
+    suspend fun activateLeft()  { items.getOrNull(index)?.leftAct?.invoke() }
+    suspend fun activateRight() { items.getOrNull(index)?.rightAct?.invoke() }
 }

@@ -62,8 +62,10 @@ suspend fun main() = Korge(
         // ── Menu/UI focus navigation (arrows) ───────────────────────────────────
         // No-ops in GameScene (not KeyboardNavigable), so in-game arrow movement is
         // unaffected. Same move()/activate() entry points a gamepad can drive later.
-        down(Key.UP)   { navFocus()?.move(-1) }
-        down(Key.DOWN) { navFocus()?.move(+1) }
+        down(Key.UP)    { navFocus()?.move(-1) }
+        down(Key.DOWN)  { navFocus()?.move(+1) }
+        down(Key.LEFT)  { navFocus()?.activateLeft() }
+        down(Key.RIGHT) { navFocus()?.activateRight() }
         // ~ (backtick/tilde key) toggles the debug overlay, console-style.
         // The grave key maps to DIFFERENT Key enums per backend: JVM/AWT → Key.BACKQUOTE,
         // Android → Key.GRAVE. Match both (plus the typed character as a layout-agnostic

@@ -32,7 +32,7 @@ class SettingsScene(
         solidRect(1000.0, 1500.0, Colors["#1E272C"])
 
         // Title — 28sp → 72vp
-        text("FLIGHT CONTROLS", 72.0, Colors["#00E5FF"], font = Fonts.title).position(100.0, 80.0)
+        text("SETTINGS", 72.0, Colors["#00E5FF"], font = Fonts.title).position(100.0, 80.0)
 
         // Section label — 14sp → 36vp
         text("STEERING MODE", 36.0, RGBA(255, 255, 255, 178), font = Fonts.content).position(100.0, 200.0)
@@ -94,7 +94,7 @@ class SettingsScene(
         fc.add(caretX, 852.0, sfxAct)
 
         // Debug overlay toggle — focus index 6
-        val dbgColor = if (engine.showDebugOverlay) Colors["#00FF88"] else Colors["#FF3333"]
+        val dbgColor = if (engine.showDebugOverlay) Colors["#00FF88"] else Colors["#999999"]
         val dbgAct: suspend () -> Unit = { engine.showDebugOverlay = !engine.showDebugOverlay; rebuild(6)() }
         solidRect(440.0, 70.0, dbgColor.withA(60)).position(100.0, 960.0)
         text(if (engine.showDebugOverlay) "DEBUG OVERLAY: ON" else "DEBUG OVERLAY: OFF", 36.0, dbgColor, font = Fonts.content).position(120.0, 972.0)
@@ -102,11 +102,18 @@ class SettingsScene(
             .onClickSuspend(views.coroutineContext) { dbgAct() }
         fc.add(caretX, 972.0, dbgAct)
 
-        // Exit button — focus index 7. "Resume Game" from an active mission, else "Save & Exit".
+        // CONTROLLER navigation row — focus index 7
+        val ctrlAct: suspend () -> Unit = { nav.changeTo { ControllerPrefsScene(engine, nav, fromGame) } }
+        solidRect(800.0, 80.0, RGBA(255, 255, 255, 20)).position(100.0, 1090.0)
+        text("CONTROLLER", 36.0, Colors.WHITE, font = Fonts.content).position(116.0, 1108.0)
+        solidRect(800.0, 80.0, RGBA(0, 0, 0, 1)).position(100.0, 1090.0)
+            .onClickSuspend(views.coroutineContext) { ctrlAct() }
+        fc.add(caretX, 1108.0, ctrlAct)
+
+        // Exit button — focus index 8. "Resume Game" from an active mission, else "Save & Exit".
         val backY = CANVAS_HEIGHT - 200.0
         val exitLabel = if (fromGame) "RESUME GAME" else "SAVE & EXIT"
-        val exitColor = if (fromGame) Colors["#00FF88"] else Colors["#E53935"]
-        solidRect(380.0, 80.0, exitColor).position(100.0, backY)
+        solidRect(380.0, 80.0, RGBA(255, 255, 255, 20)).position(100.0, backY)
         text(exitLabel, 41.0, Colors.WHITE, font = Fonts.content).position(130.0, backY + 12.0)
         val doExit: suspend () -> Unit = if (fromGame) {
             { engine.togglePause(); nav.changeTo { GameScene(engine, nav) } }

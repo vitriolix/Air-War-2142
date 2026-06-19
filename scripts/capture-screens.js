@@ -76,6 +76,12 @@ const H = Number(process.env.H || 1500);   // native logical canvas height
   await sleep(1200);
   await shot('4-settings');
 
+  // ArrowDown ×7 reaches focus index 7 (CONTROLLER row); Enter navigates to ControllerPrefsScene.
+  for (let i = 0; i < 7; i++) await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await sleep(1200);
+  await shot('5-controller-prefs');
+
   await browser.close();
   console.log('done →', OUT);
 })().catch((e) => { console.error(e); process.exit(1); });
