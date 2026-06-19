@@ -68,7 +68,7 @@ class ControllerPrefsScene(
             solidRect(chipW, 56.0, RGBA(255, 255, 255, 20)).position(chipX, cy + 12.0)
             val chipLabel = text(if (listening) "PRESS A BUTTON…" else chip, 36.0, Colors["#00E5FF"], font = Fonts.content)
             chipLabel.x = chipX + (chipW - chipLabel.width) / 2.0
-            chipLabel.y = cy + 18.0
+            chipLabel.y = (cy + 12.0) + (56.0 - chipLabel.height) / 2.0
             val listenAct = rebuild(idx, idx)
             solidRect(800.0, 80.0, RGBA(0, 0, 0, 1)).position(100.0, cy)
                 .onClickSuspend(views.coroutineContext) { listenAct() }
@@ -93,48 +93,57 @@ class ControllerPrefsScene(
             }
         }
         solidRect(280.0, 70.0, invFill).position(100.0, 640.0)
-        text(if (invertY) "INVERT Y: ON" else "INVERT Y: OFF", 36.0, invColor, font = Fonts.content)
-            .position(116.0, 657.0)
+        val invText = text(if (invertY) "INVERT Y: ON" else "INVERT Y: OFF", 36.0, invColor, font = Fonts.content)
+        invText.x = 116.0
+        invText.y = 640.0 + (70.0 - invText.height) / 2.0
         solidRect(280.0, 70.0, RGBA(0, 0, 0, 1)).position(100.0, 640.0)
             .onClickSuspend(views.coroutineContext) { invAct() }
-        fc.add(caretX, 657.0, invAct)
+        fc.add(caretX, 640.0 + (70.0 - 44.0) / 2.0, invAct)
 
-        // Deadzone label + [−][track][+] slider — focus 4 (−) and 5 (+)
+        // Stick Dead Zone label + [−][track][+] slider — focus 4 (−) and 5 (+)
         val dzFrac = (deadzone * 100 + 0.5f).toInt()
-        text("DEADZONE: 0.${dzFrac.toString().padStart(2, '0')}", 36.0, Colors.WHITE, font = Fonts.content)
+        text("STICK DEAD ZONE: 0.${dzFrac.toString().padStart(2, '0')}", 36.0, Colors.WHITE, font = Fonts.content)
             .position(100.0, 760.0)
-        solidRect(620.0, 20.0, RGBA(255, 255, 255, 20)).position(190.0, 830.0)
-        val fillW = deadzone.toDouble() / 0.50 * 620.0
-        if (fillW > 0.0) solidRect(fillW, 20.0, Colors["#00E5FF"]).position(190.0, 830.0)
 
         val decAct: suspend () -> Unit = {
             val d = (deadzone - 0.05f).coerceAtLeast(0.00f)
             nav.changeTo { ControllerPrefsScene(engine, nav, fromGame, fireBinding, rollBinding, pauseBinding, invertY, d, -1, 4) }
         }
-        solidRect(80.0, 60.0, Colors["#FF9900"]).position(100.0, 810.0)
-        text("  -  ", 36.0, Colors.WHITE, font = Fonts.content).position(100.0, 824.0)
-        solidRect(80.0, 60.0, RGBA(0, 0, 0, 1)).position(100.0, 810.0)
-            .onClickSuspend(views.coroutineContext) { decAct() }
-        fc.add(caretX, 824.0, decAct)
-
         val incAct: suspend () -> Unit = {
             val d = (deadzone + 0.05f).coerceAtMost(0.50f)
             nav.changeTo { ControllerPrefsScene(engine, nav, fromGame, fireBinding, rollBinding, pauseBinding, invertY, d, -1, 5) }
         }
-        solidRect(80.0, 60.0, Colors["#FF9900"]).position(820.0, 810.0)
-        text("  +  ", 36.0, Colors.WHITE, font = Fonts.content).position(820.0, 824.0)
-        solidRect(80.0, 60.0, RGBA(0, 0, 0, 1)).position(820.0, 810.0)
+
+        solidRect(80.0, 60.0, Colors["#FF9900"]).position(100.0, 840.0)
+        val decText = text("  -  ", 36.0, Colors.WHITE, font = Fonts.content)
+        decText.x = 100.0
+        decText.y = 840.0 + (60.0 - decText.height) / 2.0
+        solidRect(80.0, 60.0, RGBA(0, 0, 0, 1)).position(100.0, 840.0)
+            .onClickSuspend(views.coroutineContext) { decAct() }
+        fc.add(caretX, 840.0 + (60.0 - 44.0) / 2.0, decAct, leftAct = decAct, rightAct = incAct)
+
+        solidRect(620.0, 20.0, RGBA(255, 255, 255, 20)).position(190.0, 860.0)
+        val fillW = deadzone.toDouble() / 0.50 * 620.0
+        if (fillW > 0.0) solidRect(fillW, 20.0, Colors["#00E5FF"]).position(190.0, 860.0)
+
+        solidRect(80.0, 60.0, Colors["#FF9900"]).position(820.0, 840.0)
+        val incText = text("  +  ", 36.0, Colors.WHITE, font = Fonts.content)
+        incText.x = 820.0
+        incText.y = 840.0 + (60.0 - incText.height) / 2.0
+        solidRect(80.0, 60.0, RGBA(0, 0, 0, 1)).position(820.0, 840.0)
             .onClickSuspend(views.coroutineContext) { incAct() }
-        fc.add(778.0, 824.0, incAct)
+        fc.add(778.0, 840.0 + (60.0 - 44.0) / 2.0, incAct, leftAct = decAct, rightAct = incAct)
 
         // BACK button — focus 6
         val backY = CANVAS_HEIGHT - 200.0
         val backAct: suspend () -> Unit = { nav.changeTo { SettingsScene(engine, nav, fromGame, 7) } }
         solidRect(380.0, 80.0, RGBA(255, 255, 255, 20)).position(100.0, backY)
-        text("BACK", 41.0, Colors.WHITE, font = Fonts.content).position(130.0, backY + 12.0)
+        val backText = text("BACK", 41.0, Colors.WHITE, font = Fonts.content)
+        backText.x = 130.0
+        backText.y = backY + (80.0 - backText.height) / 2.0
         solidRect(380.0, 80.0, RGBA(0, 0, 0, 1)).position(100.0, backY)
             .onClickSuspend(views.coroutineContext) { backAct() }
-        fc.add(caretX, backY + 12.0, backAct)
+        fc.add(caretX, backY + (80.0 - 44.0) / 2.0, backAct)
 
         fc.caret = solidRect(18.0, 44.0, Colors["#FFCC00"])
         fc.start(initialFocus)
