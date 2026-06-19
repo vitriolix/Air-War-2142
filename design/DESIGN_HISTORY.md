@@ -6,7 +6,7 @@ often several per release — so we don't log every individual change. Instead, 
 snapshot the *current* consolidated UI/design state and add an entry here, newest at the bottom.
 
 Each entry links a committed, **byte-for-byte snapshot** of the `design/` bundle under
-`design/history/<id>/` (project-path layout), so the exact UI state of any release is recoverable —
+`design/design-history/<id>/` (project-path layout), so the exact UI state of any release is recoverable —
 independent of the Claude Design project's own history.
 
 > Cadence is **per release**, not per Design exchange. A single release may fold in many round trips
@@ -18,7 +18,7 @@ independent of the Claude Design project's own history.
 
 - **Release** — version / tag + date.
 - **UI changes** — what changed in the UI since the previous entry, and the Design round trips that fed in (either direction).
-- **Snapshot** — path to the committed bundle snapshot under `design/history/<id>/`.
+- **Snapshot** — path to the committed bundle snapshot under `design/design-history/<id>/`.
 - **Notes** — caveats, follow-ups.
 
 ---
@@ -32,7 +32,7 @@ baseline the release history builds on.
 - **UI state:** the original spec bundle — `PROMPT.md` (brief), `design-tokens.json` (**pre-fonts**
   contract), `spec.html` + `screens/1-4` (current-state baseline), `refinement-mockup.html`
   (refine-toward target), `assets/sprites.{png,txt}` (atlas). Reproduce-then-refine per `PROMPT.md` §1.
-- **Snapshot:** [`design/history/seed/`](history/seed/) — byte-for-byte, reconstructed from the seed
+- **Snapshot:** [`design/design-history/seed/`](design-history/seed/) — byte-for-byte, reconstructed from the seed
   commit `45276af` (pre-fonts `design-tokens.json`, pre-history `README.md`) + the sprite atlas.
   Seeded via `DesignSync` `planId plan_dec21c04883c4ee2_85dacf6f6620` (11 files).
 - **Notes:** inputs only — no screens generated yet at seed time. Everything Design has produced since
