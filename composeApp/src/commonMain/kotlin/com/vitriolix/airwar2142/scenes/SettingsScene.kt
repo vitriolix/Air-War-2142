@@ -102,7 +102,15 @@ class SettingsScene(
             .onClickSuspend(views.coroutineContext) { dbgAct() }
         fc.add(caretX, 972.0, dbgAct)
 
-        // Exit button — focus index 7. "Resume Game" from an active mission, else "Save & Exit".
+        // CONTROLLER navigation row — focus index 7
+        val ctrlAct: suspend () -> Unit = { nav.changeTo { ControllerPrefsScene(engine, nav, fromGame) } }
+        solidRect(800.0, 80.0, RGBA(255, 255, 255, 20)).position(100.0, 1090.0)
+        text("CONTROLLER", 36.0, Colors.WHITE, font = Fonts.content).position(116.0, 1108.0)
+        solidRect(800.0, 80.0, RGBA(0, 0, 0, 1)).position(100.0, 1090.0)
+            .onClickSuspend(views.coroutineContext) { ctrlAct() }
+        fc.add(caretX, 1108.0, ctrlAct)
+
+        // Exit button — focus index 8. "Resume Game" from an active mission, else "Save & Exit".
         val backY = CANVAS_HEIGHT - 200.0
         val exitLabel = if (fromGame) "RESUME GAME" else "SAVE & EXIT"
         val exitColor = if (fromGame) Colors["#00FF88"] else Colors["#E53935"]

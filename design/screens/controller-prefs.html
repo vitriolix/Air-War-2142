@@ -1,0 +1,217 @@
+<!-- @dsCard group="Screens" viewport="2080x1640" name="Controller" subtitle="ControllerPrefsScene (NEW §controller-prefs.md) — default + listening states" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Air War 2142 — Controller Preferences</title>
+<style>
+  /* Self-hosted shipped fonts (TrueType .ttf) — see assets/fonts/ */
+  @font-face { font-family:'Wallpoet'; font-weight:400; font-display:swap; src:url(../assets/fonts/Wallpoet-400.ttf) format('truetype'); }
+  @font-face { font-family:'Chakra Petch'; font-weight:400; font-display:swap; src:url(../assets/fonts/ChakraPetch-400.ttf) format('truetype'); }
+  @font-face { font-family:'Chakra Petch'; font-weight:500; font-display:swap; src:url(../assets/fonts/ChakraPetch-500.ttf) format('truetype'); }
+  @font-face { font-family:'Chakra Petch'; font-weight:600; font-display:swap; src:url(../assets/fonts/ChakraPetch-600.ttf) format('truetype'); }
+  @font-face { font-family:'Chakra Petch'; font-weight:700; font-display:swap; src:url(../assets/fonts/ChakraPetch-700.ttf) format('truetype'); }
+</style>
+<style>
+  /* ── DESIGN TOKENS (design-tokens.json) ──────────────────────────────── */
+  :root {
+    --cyan:#00FFFF; --hud-cyan:#00E5FF; --gold:#FFCC00; --orange:#FF9900;
+    --green:#00FF88; --red:#E53935; --red-off:#FF3333; --white:#FFFFFF; --dark:#1E272C;
+    --settings-label:rgba(255,255,255,.698);     /* RGBA(255,255,255,178) */
+    --setting-active-bg:rgba(0,229,255,.157);     /* RGBA(0,229,255,40) */
+    --setting-inactive-bg:rgba(255,255,255,.078); /* RGBA(255,255,255,20) */
+    --hud-hint-text:rgba(255,255,255,.502);       /* RGBA(255,255,255,128) */
+    /* refine: new token — controller.bindingChip = { size:[120,56], fill:RGBA(255,255,255,20), text:#00E5FF } */
+    --binding-chip-fill:rgba(255,255,255,.078);   /* RGBA(255,255,255,20) */
+    /* type scale (logical px) */
+    --t-settings-title:72px; --t-settings-item:36px; --t-settings-exit:41px; --t-hud-hint:31px;
+    --font-title:   'Wallpoet', 'Courier New', monospace;
+    --font-content: 'Chakra Petch', 'Courier New', monospace;
+    --font: var(--font-content);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:100%; height:100%; background:#0b0f11; overflow:hidden; }
+  body { display:flex; align-items:center; justify-content:center; font-family:var(--font); }
+
+  /* two states side-by-side, scaled together to fit the viewport */
+  .deck { display:flex; gap:80px; align-items:flex-start; flex:none; transform-origin:center center; }
+  .frame { display:flex; flex-direction:column; gap:18px; }
+  .frame > .cap { font-family:var(--font-content); font-weight:600; font-size:28px; line-height:1;
+    letter-spacing:.04em; color:rgba(255,255,255,.6); }
+
+  /* solid #1E272C background (1000×1500) */
+  .stage {
+    position:relative; width:1000px; height:1500px; flex:none; overflow:hidden;
+    background:var(--dark);
+  }
+
+  .title { position:absolute; left:100px; top:80px; font-size:var(--t-settings-title);
+    font-weight:400; line-height:1; font-family:var(--font-title); color:var(--hud-cyan); }
+  .section { position:absolute; left:100px; top:200px; font-size:var(--t-settings-item);
+    font-weight:700; line-height:1; color:var(--settings-label); }
+
+  /* binding rows — 800×80 at x=100, y=290/400/510 (110px pitch) */
+  .row { position:absolute; left:100px; width:800px; height:80px; }
+  /* refine: label vertically centered in the 80px row (spec said cy+18 → looked bottom-heavy under the listening highlight) */
+  .row .lbl { position:absolute; left:16px; top:0; height:80px; display:flex; align-items:center;
+    font-size:var(--t-settings-item); font-weight:700; line-height:1; } /* 116−100 = 16 */
+  .row.listening { background:var(--setting-active-bg); }     /* RGBA(0,229,255,40) */
+  .row.listening .lbl { color:var(--hud-cyan); }
+  .row.idle { background:transparent; }
+  .row.idle .lbl { color:var(--white); }
+
+  /* binding chip — 120×56, right-anchored 32px in from the row's right edge (x≈748); label #00E5FF */
+  /* refine: chip right-anchored (spec gave left x≈760) so all chips share a right edge with an even margin */
+  /* refine: chip text centered (brief said left-anchored — a KorGE note; Code computes the centered x offset) */
+  .chip { position:absolute; right:32px; top:12px; width:120px; height:56px;
+    background:var(--binding-chip-fill); display:flex; align-items:center; justify-content:center; }  /* (80−56)/2=12 */
+  .chip .glyph { font-size:var(--t-settings-item); font-weight:700;
+    line-height:1; color:var(--hud-cyan); white-space:nowrap; }
+  /* refine: listening chip widened to fit the full "PRESS A BUTTON…" prompt (right edge unchanged) */
+  .row.listening .chip { width:340px; }
+
+  /* listening hint — centered near the BACK button at section-label size; ESC exits rebind mode */
+  .hint { position:absolute; left:0; right:0; top:1210px; text-align:center; font-size:var(--t-settings-item);
+    font-weight:700; line-height:1; color:var(--hud-hint-text); }
+
+  /* refine: new token — controller.invertY default = OFF */
+  /* invert-Y toggle — 280×70 at (100,640); off = grey (neutral), on = green (active) */
+  .toggle { position:absolute; left:100px; top:640px; width:280px; height:70px;
+    display:flex; align-items:center; padding-left:16px;
+    font-size:var(--t-settings-item); font-weight:700; line-height:1; }
+  .toggle.on  { background:rgba(0,255,136,.235);  color:var(--green); }
+  .toggle.off { background:rgba(128,128,128,.235); color:#999999; } /* refine: grey when off (neutral state, not error) */
+
+  /* refine: new token — controller.deadzone = { default:0.15, range:[0.00,0.50], step:0.05 } */
+  /* deadzone label + slider [−][track][+] */
+  /* KorGE: − (100,810) 80×60 · track (190,830) 620×20 · + (820,810) 80×60 */
+  .deadzone { position:absolute; left:100px; top:760px; font-size:var(--t-settings-item);
+    font-weight:700; line-height:1; color:var(--white); }
+  .slider-row { position:absolute; left:100px; width:800px; height:60px; }
+  .slider-btn-minus { position:absolute; left:0; top:0; width:80px; height:60px;
+    background:var(--orange); display:flex; align-items:center; justify-content:center;
+    font-size:var(--t-settings-item); font-weight:700; color:var(--white); }
+  .slider-btn-plus  { position:absolute; right:0; top:0; width:80px; height:60px;
+    background:var(--orange); display:flex; align-items:center; justify-content:center;
+    font-size:var(--t-settings-item); font-weight:700; color:var(--white); }
+  .slider-track { position:absolute; left:90px; right:90px; top:20px; height:20px;
+    background:var(--setting-inactive-bg); }
+  .slider-fill  { position:absolute; left:0; top:0; height:100%; background:var(--hud-cyan); }
+
+  /* BACK button — 380×80 at y = ch−200 = 1300; label white 41px at (130, +12) */
+  .back { position:absolute; left:100px; top:1300px; width:380px; height:80px;
+    background:var(--setting-inactive-bg); }                  /* RGBA(255,255,255,20) */
+  .back .lbl { position:absolute; left:30px; top:12px; font-size:var(--t-settings-exit);
+    font-weight:700; line-height:1; color:var(--white); }    /* 130−100=30 */
+
+  /* gold focus caret — 18×44 #FFCC00 at x≈48, left of the focused control */
+  .caret { position:absolute; left:48px; width:18px; height:44px; background:var(--gold); }
+</style>
+</head>
+<body>
+  <div class="deck">
+
+    <!-- ───────────────────────── STATE A — DEFAULT ───────────────────────── -->
+    <div class="frame">
+      <div class="cap">DEFAULT — FIRE focused</div>
+      <div class="stage">
+        <div class="title">CONTROLLER</div>
+        <div class="section">GAMEPAD BINDINGS</div>
+
+        <!-- binding rows: FIRE / ROLL / PAUSE  (movement = left stick, not rebindable) -->
+        <div class="row idle" style="top:290px;">
+          <div class="lbl">FIRE</div>
+          <!-- refine: new token — controller.binding.fire default = "A" -->
+          <div class="chip"><div class="glyph">A</div></div>
+        </div>
+        <div class="row idle" style="top:400px;">
+          <div class="lbl">ROLL</div>
+          <!-- refine: new token — controller.binding.roll default = "RB" -->
+          <div class="chip"><div class="glyph">RB</div></div>
+        </div>
+        <div class="row idle" style="top:510px;">
+          <div class="lbl">PAUSE</div>
+          <!-- refine: new token — controller.binding.pause default = "Start" -->
+          <div class="chip"><div class="glyph">Start</div></div>
+        </div>
+
+        <!-- gold focus caret beside the focused (FIRE) row: cy=330 → top=308 -->
+        <div class="caret" style="top:308px;"></div>
+
+        <!-- invert-Y toggle (default OFF) -->
+        <div class="toggle off">INVERT Y: OFF</div>
+
+        <!-- deadzone slider — range 0.00–0.50, 0.15 = 30% -->
+        <div class="deadzone">DEADZONE: 0.15</div>
+        <div class="slider-row" style="top:810px;">
+          <div class="slider-btn-minus">&nbsp;&nbsp;-&nbsp;&nbsp;</div>
+          <div class="slider-track"><div class="slider-fill" style="width:30%"></div></div>
+          <div class="slider-btn-plus">&nbsp;&nbsp;+&nbsp;&nbsp;</div>
+        </div>
+
+        <!-- BACK → Settings -->
+        <div class="back"><div class="lbl">BACK</div></div>
+      </div>
+    </div>
+
+    <!-- ─────────────────── STATE B — LISTENING (rebinding FIRE) ─────────────────── -->
+    <div class="frame">
+      <div class="cap">LISTENING — rebinding FIRE</div>
+      <div class="stage">
+        <div class="title">CONTROLLER</div>
+        <div class="section">GAMEPAD BINDINGS</div>
+
+        <!-- FIRE row is listening: cyan fill, cyan label, chip reads "PRESS…" -->
+        <div class="row listening" style="top:290px;">
+          <div class="lbl">FIRE</div>
+          <!-- refine: new token — controller.bindingChip.listeningLabel = "PRESS A BUTTON…" -->
+          <div class="chip"><div class="glyph">PRESS A BUTTON&hellip;</div></div>
+        </div>
+        <div class="row idle" style="top:400px;">
+          <div class="lbl">ROLL</div>
+          <div class="chip"><div class="glyph">RB</div></div>
+        </div>
+        <div class="row idle" style="top:510px;">
+          <div class="lbl">PAUSE</div>
+          <div class="chip"><div class="glyph">Start</div></div>
+        </div>
+
+        <!-- caret stays on the row being rebound (FIRE) -->
+        <div class="caret" style="top:308px;"></div>
+
+        <!-- listening hint: ESC exits rebind mode — centered above BACK -->
+        <!-- refine: hint moved to centered/36px above BACK (brief placed it under the rows at 31px) -->
+        <div class="hint">PRESS ESC TO CANCEL</div>
+
+        <div class="toggle off">INVERT Y: OFF</div>
+
+        <!-- deadzone slider — range 0.00–0.50, 0.15 = 30% -->
+        <div class="deadzone">DEADZONE: 0.15</div>
+        <div class="slider-row" style="top:810px;">
+          <div class="slider-btn-minus">&nbsp;&nbsp;-&nbsp;&nbsp;</div>
+          <div class="slider-track"><div class="slider-fill" style="width:30%"></div></div>
+          <div class="slider-btn-plus">&nbsp;&nbsp;+&nbsp;&nbsp;</div>
+        </div>
+
+        <div class="back"><div class="lbl">BACK</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    (function () {
+      var deck = document.querySelector('.deck');
+      function fit() {
+        // measure intrinsic size by temporarily clearing transform
+        deck.style.transform = 'none';
+        var w = deck.scrollWidth, h = deck.scrollHeight;
+        var s = Math.min(window.innerWidth / w, window.innerHeight / h);
+        deck.style.transform = 'scale(' + s + ')';
+      }
+      window.addEventListener('resize', fit); fit();
+    })();
+  </script>
+</body>
+</html>

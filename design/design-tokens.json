@@ -32,6 +32,7 @@
       "settingsLabel":    "RGBA(255,255,255,178)",
       "settingActiveBg":  "RGBA(0,229,255,40)",
       "settingInactiveBg":"RGBA(255,255,255,20)",
+      "controlNeutralOff": "RGBA(128,128,128,60)",
       "overlayPaused":    "BLACK @ alpha 0.7",
       "overlayGameOver":  "BLACK @ alpha 0.85",
       "overlayVictory":   "BLACK @ alpha 0.8"
@@ -73,6 +74,7 @@
       "$comment": "SettingsScene.kt — flat solidRects, fully reproducible (no glass).",
       "steeringRow":  { "size": [800, 80], "activeFill": "RGBA(0,229,255,40)", "activeText": "#00E5FF", "inactiveFill": "RGBA(255,255,255,20)", "inactiveText": "#FFFFFF" },
       "sensStepper":  { "size": [80, 60], "fill": "#FF9900 (opaque orange)", "label": "white  -  /  +" },
+      "slider":        { "btnSize": [80, 60], "btnFill": "#FF9900", "trackSize": [620, 20], "trackFill": "RGBA(255,255,255,20)", "fillColor": "#00E5FF", "gap": 10, "note": "[−][track][+] within 800px row; KorGE: solidRect for track + fill; used by controller deadzone" },
       "sfxToggle":    { "size": [280, 70], "onColor": "#00FF88", "offColor": "#FF3333", "fill": "<color> @ alpha 60", "text": "<color>" },
       "debugToggle":  { "size": [440, 70], "onColor": "#00FF88", "offColor": "#FF3333", "fill": "<color> @ alpha 60", "text": "<color>" },
       "exitButton":   { "size": [380, 80], "fromGame": "fill #00FF88, label 'RESUME GAME'", "fromMenu": "fill #E53935, label 'SAVE & EXIT'", "label": "white 41px" },
@@ -84,6 +86,13 @@
       "radius": "12-24px",
       "titleGlow": "0 0 32px rgba(0,255,255,0.3)"
     }
+  },
+  "controller": {
+    "$comment": "Controller Preferences screen tokens — new in Phase 2 of the Design round-trip. Bindings are scaffolded defaults; real persistence lands with gamepad input.",
+    "bindingChip":    { "defaultSize": [120, 56], "listeningSize": [340, 56], "fill": "RGBA(255,255,255,20)", "textColor": "#00E5FF", "listeningLabel": "PRESS A BUTTON…", "rightMargin": 32 },
+    "bindings":       { "fire": "A", "roll": "RB", "pause": "Start" },
+    "invertY":        { "default": false, "onColor": "#00FF88", "offColor": "#999999", "offFill": "RGBA(128,128,128,60)" },
+    "deadzone":       { "default": 0.15, "min": 0.00, "max": 0.50, "step": 0.05 }
   },
   "sprites": {
     "$comment": "Real game art (NOT emoji — see spec.html's sprite gallery). Atlas committed at composeApp/src/commonMain/resources/sprites.{png,txt}; designExport copies it into design/assets/. sprites.txt columns are `name atlasX atlasY atlasW atlasH hotspotX hotspotY` — the LAST TWO ARE THE HOTSPOT (draw pivot), NOT the display size. The atlas is baked at AtlasSpec.BAKE_SCALE = 3.0, so display (on-screen logical px) = atlasW/3 × atlasH/3. Each slice below gives [atlasW, atlasH], display, and hotspot (in 3x atlas px).",
