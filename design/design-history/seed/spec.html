@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Air War 2142 — Current UI Baseline</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: ui-monospace, 'Courier New', monospace; background: #111; color: #fff; padding: 32px; }
+  h1 { color: #00E5FF; letter-spacing: 3px; font-size: 20px; margin-bottom: 8px; }
+  h2 { color: #FFCC00; letter-spacing: 2px; font-size: 14px; margin: 36px 0 14px; }
+  .subtitle { color: rgba(255,255,255,0.55); font-size: 13px; margin-bottom: 8px; line-height: 1.6; }
+  .banner { background:#062a22; border:2px solid #00FF88; border-radius:12px; padding:16px 20px; margin:18px 0 28px; max-width:1180px; }
+  .banner b { color:#00FF88; }
+  code { background:#222; padding:1px 5px; border-radius:4px; font-size:12px; }
+
+  .shots { display:flex; gap:24px; flex-wrap:wrap; }
+  .shot { width:280px; }
+  .shot img { width:280px; border:1px solid rgba(255,255,255,0.18); border-radius:18px; display:block; background:#0F2027; }
+  .shot .cap { color:#00E5FF; font-size:11px; font-weight:700; letter-spacing:1px; margin-bottom:8px; text-transform:uppercase; }
+  .shot .note { color:rgba(255,255,255,0.6); font-size:11px; line-height:1.5; margin-top:8px; }
+
+  .gallery { display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; }
+  .sprite-card { background:#1a2228; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:10px; text-align:center; }
+  .sprite-card .crop {
+    /* checkerboard so transparent edges are visible */
+    background-color:#0c1216;
+    background-image:linear-gradient(45deg,#161e24 25%,transparent 25%),linear-gradient(-45deg,#161e24 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#161e24 75%),linear-gradient(-45deg,transparent 75%,#161e24 75%);
+    background-size:12px 12px; background-position:0 0,0 6px,6px -6px,-6px 0;
+    margin:0 auto 8px; image-rendering:auto;
+  }
+  .sprite-card .nm { color:#fff; font-size:11px; font-weight:700; }
+  .sprite-card .dim { color:rgba(255,255,255,0.45); font-size:10px; }
+
+  .tokens { display:grid; grid-template-columns:1fr 1fr; gap:28px; max-width:1100px; font-size:12.5px; line-height:1.7; }
+  .sw { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:middle; margin-right:6px; border:1px solid rgba(255,255,255,0.2); }
+  .muted { color:rgba(255,255,255,0.55); }
+</style>
+</head>
+<body>
+
+<h1>AIR WAR 2142 — CURRENT UI BASELINE</h1>
+<p style="font-size:12px; margin-bottom:10px;">
+  <a href="https://github.com/vitriolix/Air-War-2142" style="color:#00E5FF;">GitHub repo ↗</a>
+  &nbsp;·&nbsp;
+  <a href="https://claude.ai/design" style="color:#00E5FF;">Claude Design ↗</a>
+  <span class="muted">(project link TBD)</span>
+</p>
+<p class="subtitle">What the game actually renders today. Screenshots captured from the live JS build
+(<code>./gradlew captureScreens</code>, headed + 1:1); sprites are the real atlas; values are transcribed from
+<code>scenes/*.kt</code>. <b>This is the reproduce baseline</b> — match it exactly first.</p>
+
+<div class="banner">
+  <div style="margin-bottom:6px;"><b>This file = current truth.</b> The aspirational glass-panel mockup moved to
+  <code>refinement-mockup.html</code> (clearly labeled NOT-current). <code>design-tokens.json</code> is the authoritative token contract.</div>
+  <div class="muted">Logical canvas is 1000×1500 (desktop/web) / 1000×2200 (Android). The HUD is flat text — no panels.
+  Planes are <b>sprites</b> from the atlas below, <b>not</b> <code>✈</code> emoji.</div>
+  <div class="muted" style="margin-top:6px;"><b>Premise (refine-toward, not shown here):</b> Air War 2142 is an alt-history reimagining —
+  WWII air warfare evolved 200 years without abandoning its roots: riveted prop-planes + energy weapons + sci-fi HUDs,
+  a steampunk-style fusion anchored to WWII. See <code>PROMPT.md</code> §1. These screenshots are the <b>current</b> state, not the theme.</div>
+</div>
+
+<h2>REAL SCREENS (captured from the running game)</h2>
+<div class="shots">
+  <div class="shot">
+    <div class="cap">1 — Main Menu</div>
+    <img src="screens/1-menu.png" alt="Main menu">
+    <div class="note">Ocean gradient + big scrolling island discs. "AIR WAR" 56px cyan, "2142" 184px gold.
+      Two 840×80 translucent button bars; gold focus caret at left of the focused one. Bottom hint, faint white.</div>
+  </div>
+  <div class="shot">
+    <div class="cap">2 — In-game HUD</div>
+    <img src="screens/2-hud.png" alt="In-game HUD">
+    <div class="note">Flat text over live ocean/islands/cloud-ellipses. SCORE (cyan) · PAUSE (white) · LOOPS (orange) top row.
+      Player is the small blue plane sprite. FIGHTERS / FUEL · ENERGY bottom row.</div>
+  </div>
+  <div class="shot">
+    <div class="cap">3 — Paused</div>
+    <img src="screens/3-paused.png" alt="Paused overlay">
+    <div class="note">Full-canvas black @0.7 over frozen game. Left-aligned text: "MISSION PAUSED" 56px;
+      "[ P ] Resume flight" green; "SETTINGS &amp; INPUTS" white; "[ Q ] Abandon mission" faint.</div>
+  </div>
+  <div class="shot">
+    <div class="cap">4 — Settings (from game)</div>
+    <img src="screens/4-settings.png" alt="Settings">
+    <div class="note">#1E272C bg. "FLIGHT CONTROLS" 72px cyan title. 3 steering rows (active = cyan/teal + gold caret).
+      Orange ± steppers, green/red SFX &amp; DEBUG toggles, green "RESUME GAME" (or red "SAVE &amp; EXIT" from menu).</div>
+  </div>
+</div>
+<p class="subtitle" style="margin-top:14px;">⚠ Observed engine artifact (not a design choice): glyphs with vertical strokes (T/L/I)
+render slightly doubled in the JS build — visible as "FLIGHTi CONTiROLiS". Logged for the team; ignore for design intent.</p>
+
+<h2>REAL SPRITES (the actual atlas — these are the planes)</h2>
+<p class="subtitle">Cropped live from <code>assets/sprites.png</code> using <code>assets/sprites.txt</code>. Shown at ½ atlas scale.
+  On-screen logical size = atlas px ÷ 3 (the bake scale). These replace the emoji placeholders the old mockup used.</p>
+<div class="gallery" id="gallery"></div>
+
+<h2>DESIGN TOKENS (summary — design-tokens.json is authoritative)</h2>
+<div class="tokens">
+  <div>
+    <div style="color:#FF9900;font-weight:700;margin-bottom:8px;">Colors</div>
+    <div><span class="sw" style="background:#00FFFF"></span>#00FFFF — "AIR WAR" title, primary borders</div>
+    <div><span class="sw" style="background:#00E5FF"></span>#00E5FF — SCORE label, settings title/active, HUD accent</div>
+    <div><span class="sw" style="background:#FFCC00"></span>#FFCC00 — "2142" title, focus caret, score/credit values</div>
+    <div><span class="sw" style="background:#FF9900"></span>#FF9900 — LOOPS label, ± stepper fills</div>
+    <div><span class="sw" style="background:#00FF88"></span>#00FF88 — fuel/energy, victory, SFX-on, resume</div>
+    <div><span class="sw" style="background:#FF3333"></span>#FF3333 — toggle-off (SFX/debug OFF)</div>
+    <div><span class="sw" style="background:#E53935"></span>#E53935 — game over / danger / "SAVE &amp; EXIT"</div>
+    <div><span class="sw" style="background:#1E272C"></span>#1E272C — settings background</div>
+    <div class="muted" style="margin-top:8px;">Ocean gradient #0F2027→#203A43→#2C5364 · island sand #E2D4A8 / grass #2E8B57 / dark #1E5B37</div>
+  </div>
+  <div>
+    <div style="color:#FF9900;font-weight:700;margin-bottom:8px;">Type (logical px, heavy mono font)</div>
+    <div>184 — "2142" hero title</div>
+    <div>82 / 72 / 66 / 56 — victory head / settings title / game-over head / paused &amp; menu-title-cyan</div>
+    <div>51 — HUD score &amp; loops values</div>
+    <div>46 / 41 — menu buttons / settings exit</div>
+    <div>36 — overlay subtext, settings rows &amp; toggles</div>
+    <div>31 — PAUSE, FIGHTERS, menu hint</div>
+    <div>28 — SCORE / LOOPS labels &nbsp; · &nbsp; 26 — FUEL %</div>
+    <div class="muted" style="margin-top:8px;">No rounded corners on flat rects; text is left-anchored; no panels/blur in the current UI.</div>
+  </div>
+</div>
+
+<script>
+// name, atlasX, atlasY, atlasW, atlasH  (from assets/sprites.txt; last 2 cols = hotspot, omitted here)
+const SPRITES = [
+  ["player_normal",2,2,270,314],["player_escorts",2,320,594,314],["player_roll",276,2,270,285],
+  ["enemy_scout",550,2,342,195],["enemy_diver",896,2,420,225],["enemy_squadron_red",1320,2,324,191],
+  ["enemy_heavy_fighter",1648,2,360,276],["enemy_boss",600,231,750,486],
+  ["bullet_player",550,201,24,84],["bullet_enemy",1354,197,48,48],
+  ["island",1354,282,615,615],["cloud",2,638,567,300],["powerup",573,721,150,150],
+];
+const ATLAS = 2048, F = 0.5;            // display at half atlas scale
+const g = document.getElementById("gallery");
+for (const [nm,x,y,w,h] of SPRITES) {
+  const card = document.createElement("div"); card.className = "sprite-card";
+  const crop = document.createElement("div"); crop.className = "crop";
+  crop.style.width = (w*F)+"px"; crop.style.height = (h*F)+"px";
+  crop.style.backgroundImage = "url(assets/sprites.png)";
+  crop.style.backgroundRepeat = "no-repeat";
+  crop.style.backgroundSize = (ATLAS*F)+"px "+(ATLAS*F)+"px";
+  crop.style.backgroundPositionX = (-x*F)+"px";
+  crop.style.backgroundPositionY = (-y*F)+"px";
+  const disp = Math.round(w/3)+"×"+Math.round(h/3);
+  card.innerHTML = '<div class="nm">'+nm+'</div><div class="dim">'+disp+' logical px</div>';
+  card.insertBefore(crop, card.firstChild);
+  g.appendChild(card);
+}
+</script>
+
+</body>
+</html>
