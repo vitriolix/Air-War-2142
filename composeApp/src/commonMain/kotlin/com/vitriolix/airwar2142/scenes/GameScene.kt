@@ -39,6 +39,7 @@ class GameScene(
 
         // ── Sprite atlas — build-time baked vectors, drawn as batched Images ──
         val atlas = SpriteAtlas.load()
+        Fonts.load()
 
         // ── Z-layer containers (back → front) ─────────────────────────────────
         val bgContainer       = container { }   // ocean + islands + clouds
@@ -101,15 +102,17 @@ class GameScene(
         }
 
         // ── HUD ───────────────────────────────────────────────────────────────
-        text("SCORE", 28.0, Colors["#00E5FF"]).position(16.0, 16.0)
-        val scoreText = text("0", 51.0, Colors.WHITE).position(16.0, 52.0)
-        text("LOOPS", 28.0, Colors["#FF9900"]).position(868.0, 16.0)
-        val loopsText = text("3", 51.0, Colors.WHITE).position(868.0, 52.0)
-        val pauseLabel = text("PAUSE", 31.0, Colors.WHITE).position(446.0, 16.0)
+        text("SCORE", 28.0, Colors["#00E5FF"], font = Fonts.content).position(16.0, 16.0)
+        val scoreText = text("0", 51.0, Colors.WHITE, font = Fonts.content).position(16.0, 52.0)
+        text("LOOPS", 28.0, Colors["#FF9900"], font = Fonts.content).position(868.0, 16.0)
+        val loopsText = text("3", 51.0, Colors.WHITE, font = Fonts.content).position(868.0, 52.0)
+        val pauseLabel = text("PAUSE", 31.0, Colors.WHITE, font = Fonts.content).position(446.0, 16.0)
         pauseLabel.onClick { engine.togglePause() }
+        // Lives row keeps the default font: the airplane glyph (U+2708 ✈) isn't in the
+        // latin-subset Chakra Petch. Rework to a sprite indicator to move it onto Fonts.content.
         val livesText = text("FIGHTERS: ✈ ✈ ✈", 31.0, Colors.WHITE).position(16.0, ch - 55.0)
-        text("FUEL / ENERGY", 26.0, Colors["#00FF88"]).position(620.0, ch - 62.0)
-        val fuelText = text("100%", 26.0, Colors.WHITE).position(890.0, ch - 62.0)
+        text("FUEL / ENERGY", 26.0, Colors["#00FF88"], font = Fonts.content).position(620.0, ch - 62.0)
+        val fuelText = text("100%", 26.0, Colors.WHITE, font = Fonts.content).position(890.0, ch - 62.0)
 
         // ── Debug overlay ─────────────────────────────────────────────────────
         val dbgLabels = listOf("FPS", "TICK", "POS", "FUEL", "LIVES", "ENEMIES", "PARTS", "KEYS", "MODE")
@@ -141,11 +144,11 @@ class GameScene(
 
         // ── Overlay ───────────────────────────────────────────────────────────
         val overlayBg   = solidRect(1000.0, ch, RGBA(0, 0, 0, 0)).position(0.0, 0.0)
-        val overlayHead = text("", 56.0, Colors.WHITE).position(80.0, 580.0)
-        val overlaySub  = text("", 36.0, Colors.WHITE).position(80.0, 670.0)
-        val overlayBtn1 = text("", 36.0, Colors["#00FF88"]).position(80.0, 770.0)
-        val overlayBtn2 = text("", 36.0, Colors.WHITE).position(80.0, 840.0)
-        val overlayBtn3 = text("", 36.0, RGBA(255, 255, 255, 160)).position(80.0, 910.0)
+        val overlayHead = text("", 56.0, Colors.WHITE, font = Fonts.title).position(80.0, 580.0)
+        val overlaySub  = text("", 36.0, Colors.WHITE, font = Fonts.content).position(80.0, 670.0)
+        val overlayBtn1 = text("", 36.0, Colors["#00FF88"], font = Fonts.content).position(80.0, 770.0)
+        val overlayBtn2 = text("", 36.0, Colors.WHITE, font = Fonts.content).position(80.0, 840.0)
+        val overlayBtn3 = text("", 36.0, RGBA(255, 255, 255, 160), font = Fonts.content).position(80.0, 910.0)
         overlayHead.visible = false; overlaySub.visible = false
         overlayBtn1.visible = false; overlayBtn2.visible = false; overlayBtn3.visible = false
 
