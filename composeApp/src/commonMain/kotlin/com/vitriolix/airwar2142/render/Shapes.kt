@@ -3,6 +3,7 @@ package com.vitriolix.airwar2142.render
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
 import korlibs.image.paint.LinearGradientPaint
+import korlibs.image.paint.RadialGradientPaint
 import korlibs.image.vector.ShapeBuilder
 import korlibs.math.geom.Point
 import korlibs.math.geom.Size2D
@@ -205,54 +206,211 @@ internal fun ShapeBuilder.drawEnemyBulletShape() {
     fill(RGBA(255, 200, 200, 255)) { circle(0.0, 0.0, 2.5) }
 }
 
-// ── Player — P-38 Lightning, centered at (0,0), facing up (−y = forward) ───────
+// ── Player — twin-boom P-38 interceptor ───────────────────────────────────────
+//
+// Re-authored from the Design handoff (design/incoming/design_handoff_player_plane).
+// The art is authored in the handoff's own coordinate system (centreline cx=140,
+// nose up, fixed Y bands) and mapped to the engine's centred-at-origin, facing-up
+// convention by [drawAirframe]. Colorway is fully derived from a [PlanePalette].
+//
+// Scope note: this is the clean "New" airframe with always-on weathering. Battle-
+// damage states, the 3/4 bank pose and every animated FX (exhaust backfire, fire/
+// smoke, the death/crash sequence, prop spin) are deliberately deferred — props are
+// drawn as a static motion-blurred disc; no engine flame is baked in. `tick` is
+// unused for now (kept so the bake/runtime signature is stable).
 
+// Handoff coordinate constants.
+private const val DESIGN_CX = 140.0        // centreline
+private const val DESIGN_CY = 188.0        // vertical pivot → engine origin (≈ airframe centroid)
+private const val DESIGN_FULL_SPAN = 372.0 // full wingspan (2 * span 186)
+
+// On-screen sizing knobs (tunable). The handoff geometry is historically accurate
+// (wingspan:length ≈ 1.36), which reads wide-and-flat in a vertical shmup, so the
+// art is rendered larger than the gameplay footprint and stretched vertically for a
+// taller, more directional silhouette.
+private const val PLANE_RENDER_SCALE = 2.0 // on-screen size vs the PlayerState.width footprint
+private const val PLANE_VSTRETCH = 1.25    // extra vertical elongation (Y scale = X scale × this)
+
+@Suppress("UNUSED_PARAMETER")
 internal fun ShapeBuilder.drawPlayer(p: PlayerState, tick: Long) {
-    val hw = p.width / 2.0; val hh = p.height / 2.0
-    val bx = 20.0; val bw = 8.0
+    val pal = PlanePalette.DEFAULT
+    // px-per-design-unit. Horizontal maps the full wingspan to width×RENDER_SCALE;
+    // vertical adds VSTRETCH on top so the plane reads longer than the raw geometry.
+    val ux = p.width / DESIGN_FULL_SPAN * PLANE_RENDER_SCALE
+    val uy = ux * PLANE_VSTRETCH
 
+    // Escort wingmen (0.5 scale) flank the leader, drawn behind it.
     if (p.escortsActive && p.rollProgress == 0f) {
-        fill(Colors["#546E7A"]) {
-            roundRect(-hw - 46.0, -6.0, 26.0, 12.0, 3.0, 3.0)
-            roundRect( hw + 20.0, -6.0, 26.0, 12.0, 3.0, 3.0)
+        val ex = p.width * 0.82 * PLANE_RENDER_SCALE
+        val ey = p.width * 0.10 * PLANE_RENDER_SCALE
+        drawAirframe(pal, -ex, ey, ux * 0.5, uy * 0.5)
+        drawAirframe(pal,  ex, ey, ux * 0.5, uy * 0.5)
+    }
+
+    drawAirframe(pal, 0.0, 0.0, ux, uy)
+}
+
+// Draws one whole airframe centred at (ox,oy) with [ux]/[uy] px per handoff design-unit.
+private fun ShapeBuilder.drawAirframe(pal: PlanePalette, ox: Double, oy: Double, ux: Double, uy: Double) {
+    val sb = this
+    fun X(x: Double) = (x - DESIGN_CX) * ux + ox
+    fun Y(y: Double) = (y - DESIGN_CY) * uy + oy
+    // Filled polygon from flat design-coord pairs (x0,y0,x1,y1,…).
+    fun poly(vararg c: Double) {
+        sb.moveTo(X(c[0]), Y(c[1]))
+        var i = 2
+        while (i < c.size) { sb.lineTo(X(c[i]), Y(c[i + 1])); i += 2 }
+        sb.close()
+    }
+    fun dellipse(x: Double, y: Double, rx: Double, ry: Double) = sb.ellipse(X(x), Y(y), rx * ux, ry * uy)
+    fun drrect(x: Double, y: Double, w: Double, h: Double, r: Double) =
+        sb.roundRect(X(x), Y(y), w * ux, h * uy, r * ux, r * ux)
+
+    val gap = 64.0; val span = 186.0
+    val lbx = DESIGN_CX - gap; val rbx = DESIGN_CX + gap
+    val wingLE = 138.0; val wingTE = 184.0
+    val spinTipY = 70.0; val noseTipY = 62.4
+
+    // Horizontal cylinder gradient across one boom (edge→spec core→ao), per handoff gBoom.
+    fun boomGrad(xc: Double) = LinearGradientPaint(X(xc - 14), Y(150.0), X(xc + 14), Y(150.0))
+        .addColorStop(0.0, pal.edge).addColorStop(0.14, pal.dark).addColorStop(0.30, pal.light)
+        .addColorStop(0.42, pal.spec).addColorStop(0.50, pal.core40).addColorStop(0.58, pal.spec)
+        .addColorStop(0.72, pal.base).addColorStop(0.88, pal.dark2).addColorStop(1.0, pal.ao)
+    // Fuselage cross-section gradient across the gondola pod (gFuse).
+    val fuseGrad = LinearGradientPaint(X(DESIGN_CX - 17), Y(132.0), X(DESIGN_CX + 17), Y(132.0))
+        .addColorStop(0.0, pal.ao).addColorStop(0.16, pal.dark).addColorStop(0.32, pal.light)
+        .addColorStop(0.44, pal.core38).addColorStop(0.56, pal.spec).addColorStop(0.72, pal.base)
+        .addColorStop(0.88, pal.dark2).addColorStop(1.0, pal.edge)
+    // Vertical wing gradient (lite top → dark trailing), gWing.
+    val wingGrad = LinearGradientPaint(X(DESIGN_CX), Y(wingLE), X(DESIGN_CX), Y(wingTE))
+        .addColorStop(0.0, pal.lite2).addColorStop(0.3, pal.base).addColorStop(1.0, pal.dark)
+    val tailGrad = LinearGradientPaint(X(DESIGN_CX), Y(300.0), X(DESIGN_CX), Y(316.0))
+        .addColorStop(0.0, pal.lite2).addColorStop(0.3, pal.base).addColorStop(1.0, pal.dark)
+
+    // ── Ambient-occlusion contact shadows (blur approximated by low-alpha ellipses) ──
+    fill(RGBA(0, 0, 0, 52)) { dellipse(DESIGN_CX + 4, 176.0, 20.0, 30.0) }
+    fill(RGBA(0, 0, 0, 46)) {
+        dellipse(lbx + 3, 178.0, 13.0, 22.0)
+        dellipse(rbx + 3, 178.0, 13.0, 22.0)
+    }
+
+    // ── Always-on weathering: exhaust soot streaks washing back over the booms ──
+    fill(RGBA(0x16, 0x18, 0x0f, 66)) {
+        for (x in listOf(lbx, rbx)) for (s in listOf(1.0, -1.0))
+            poly(x + s * 11, 250.0, x + s * 17, 250.0, x + s * 15, 304.0, x + s * 9, 304.0)
+    }
+    fill(RGBA(0x10, 0x0f, 0x0a, 50)) {
+        poly(DESIGN_CX - 4, 148.0, DESIGN_CX - 1, 148.0, DESIGN_CX - 2, 184.0, DESIGN_CX - 5, 184.0)
+        poly(DESIGN_CX + 2, 154.0, DESIGN_CX + 5, 154.0, DESIGN_CX + 4, 184.0, DESIGN_CX + 1, 184.0)
+    }
+
+    // ── Wings (tapered: root chord 46 → narrow tip), with LE specular + TE shadow ──
+    for (dir in listOf(-1.0, 1.0)) {
+        val tipLE = wingLE + 14; val tipTE = wingTE - 20
+        fill(wingGrad) {
+            poly(DESIGN_CX, wingLE, DESIGN_CX + dir * (gap + 6), wingLE - 1, DESIGN_CX + dir * span, tipLE,
+                 DESIGN_CX + dir * span, tipTE, DESIGN_CX + dir * (gap + 6), wingTE, DESIGN_CX, wingTE)
         }
-        fill(Colors["#607D8B"]) {
-            roundRect(-hw - 54.0, -2.0, 42.0, 4.0, 2.0, 2.0)
-            roundRect( hw + 12.0, -2.0, 42.0, 4.0, 2.0, 2.0)
+        fill(RGBA(pal.spec.r, pal.spec.g, pal.spec.b, 140)) {
+            poly(DESIGN_CX, wingLE, DESIGN_CX + dir * (gap + 6), wingLE - 1, DESIGN_CX + dir * span, tipLE,
+                 DESIGN_CX + dir * span, tipLE + 3, DESIGN_CX + dir * (gap + 6), wingLE + 2, DESIGN_CX, wingLE + 3)
+        }
+        fill(RGBA(pal.ao.r, pal.ao.g, pal.ao.b, 102)) {
+            poly(DESIGN_CX, wingTE, DESIGN_CX + dir * (gap + 6), wingTE, DESIGN_CX + dir * span, tipTE,
+                 DESIGN_CX + dir * span, tipTE - 2.5, DESIGN_CX + dir * (gap + 6), wingTE - 2.5, DESIGN_CX, wingTE - 2.5)
+        }
+        // Yellow wingtip accent cap.
+        fill(pal.accent) {
+            poly(DESIGN_CX + dir * span, tipLE, DESIGN_CX + dir * (span - 15), tipLE + 2,
+                 DESIGN_CX + dir * (span - 15), tipTE - 2, DESIGN_CX + dir * span, tipTE)
         }
     }
 
-    if (p.rollProgress == 0f) {
-        val fl = 7.0 + (tick % 6) * 1.5
-        fill(RGBA(255, 70, 0, 200))  { circle(-bx, hh + fl * 0.35, fl) }
-        fill(RGBA(255, 70, 0, 200))  { circle( bx, hh + fl * 0.35, fl) }
-        fill(RGBA(255, 190, 0, 180)) { circle(-bx, hh + fl * 0.15, fl * 0.5) }
-        fill(RGBA(255, 190, 0, 180)) { circle( bx, hh + fl * 0.15, fl * 0.5) }
+    // ── Tailplane (horizontal stabiliser joining the booms) ──
+    fill(tailGrad) {
+        poly(lbx - 6, 300.0, rbx + 6, 300.0, rbx + 8, 308.0, rbx + 4, 316.0, lbx - 4, 316.0, lbx - 8, 308.0)
     }
 
-    fill(Colors["#546E7A"]) {
-        roundRect(-bx - bw/2, -hh, bw, hh * 2, 4.0, 4.0)
-        roundRect( bx - bw/2, -hh, bw, hh * 2, 4.0, 4.0)
+    // ── Engine booms (slender nacelles) + cowl ring + exhaust scoops ──
+    for (dir in listOf(-1.0, 1.0)) {
+        val x = DESIGN_CX + dir * gap
+        fill(boomGrad(x)) {
+            poly(x, 86.0, x - 13, 100.0, x - 14, 150.0, x - 12, 200.0, x - 10, 252.0, x - 9, 290.0,
+                 x, 300.0, x + 9, 290.0, x + 10, 252.0, x + 12, 200.0, x + 14, 150.0, x + 13, 100.0)
+        }
+        fill(pal.dark) { poly(x - 12, 100.0, x + 12, 100.0, x + 11, 116.0, x - 11, 116.0) } // cowl ring
+        for (s in listOf(1.0, -1.0)) {
+            fill(pal.dark2) { poly(x + s * 11, 226.0, x + s * 20, 235.0, x + s * 20, 258.0, x + s * 11, 266.0) }
+            fill(RGBA(0x0b, 0x0e, 0x0a, 224)) {
+                poly(x + s * 12, 238.0, x + s * 18, 240.0, x + s * 18, 253.0, x + s * 12, 255.0)
+            }
+        }
     }
-    fill(Colors["#607D8B"]) {
-        roundRect(-bx - 14.0, hh - 9.0, 28.0, 6.0, 3.0, 3.0)
-        roundRect( bx - 14.0, hh - 9.0, 28.0, 6.0, 3.0, 3.0)
+
+    // ── Fins (boom tail fairings) + vertical stabilisers with yellow tip bands ──
+    for (dir in listOf(-1.0, 1.0)) {
+        val x = DESIGN_CX + dir * gap
+        fill(boomGrad(x)) {
+            poly(x - 11, 286.0, x - 12, 308.0, x - 6, 320.0, x + 6, 320.0, x + 12, 308.0, x + 11, 286.0)
+        }
+        fill(fuseGrad) { // vertical-stab blade
+            poly(x - 4, 282.0, x + 4, 282.0, x + 5, 304.0, x + 4, 322.0, x, 328.0, x - 4, 322.0, x - 5, 304.0)
+        }
+        fill(RGBA(pal.accent.r, pal.accent.g, pal.accent.b, 230)) {
+            poly(x - 4, 282.0, x + 4, 282.0, x + 4, 292.0, x - 4, 292.0)
+        }
     }
-    fill(Colors["#90A4AE"]) { roundRect(-hw, -7.0, hw * 2, 14.0, 5.0, 5.0) }
-    fill(Colors["#B71C1C"]) {
-        roundRect(-hw,       -6.0, 10.0, 12.0, 3.0, 3.0)
-        roundRect(hw - 10.0, -6.0, 10.0, 12.0, 3.0, 3.0)
+
+    // ── Spinners (dark cone + yellow tip) ──
+    for (dir in listOf(-1.0, 1.0)) {
+        val x = DESIGN_CX + dir * gap
+        fill(pal.dark2) { poly(x - 10, 92.0, x, spinTipY, x + 10, 92.0) }
+        fill(pal.tip)   { poly(x - 5, 82.0, x, spinTipY, x + 5, 82.0) }
     }
-    fill(Colors["#B0BEC5"]) { roundRect(-7.0, -hh * 0.73, 14.0, hh * 0.82, 5.0, 5.0) }
-    fill(Colors["#90A4AE"]) { roundRect(-5.0, -hh * 0.42, 10.0, 2.0, 1.0, 1.0) }
-    fill(RGBA(0, 210, 240, 220))  { ellipse(0.0, -hh * 0.55, 5.0, 9.0) }
-    fill(RGBA(220, 250, 255, 90)) { ellipse(-1.0, -hh * 0.58, 2.0, 4.0) }
-    fill(RGBA(170, 215, 235, 75)) {
-        circle(-bx, -hh + 7.0, 12.0)
-        circle( bx, -hh + 7.0, 12.0)
+
+    // ── Propellers — static motion-blurred disc (spin is deferred FX) ──
+    for (dir in listOf(-1.0, 1.0)) {
+        val x = DESIGN_CX + dir * gap; val pcy = 88.0
+        fill(RGBA(0xcf, 0xe3, 0xea, 33)) { dellipse(x, pcy, 40.0, 8.0) }
+        fill(RGBA(0xea, 0xf3, 0xf7, 46)) { dellipse(x, pcy, 40.0, 3.0) }
+        fill(RGBA(pal.metal.r, pal.metal.g, pal.metal.b, 150)) { dellipse(x, pcy, 38.0, 6.5) }
+        fill(pal.dark2) { dellipse(x, pcy, 8.0, 5.0) }
+        fill(pal.edge)  { dellipse(x, pcy, 3.0, 2.0) }
     }
-    fill(Colors["#37474F"]) {
-        circle(-bx, -hh + 7.0, 2.5)
-        circle( bx, -hh + 7.0, 2.5)
+
+    // ── Gondola pod + canopy bubble + nose guns ──
+    val canG = RadialGradientPaint(X(139.0), Y(143.0), 0.0, X(DESIGN_CX), Y(152.0), 22.0 * ux)
+        .addColorStop(0.0, pal.canopyHi)
+        .addColorStop(0.55, shade(pal.canopyInner, 6.0))
+        .addColorStop(1.0, shade(pal.canopyInner, -10.0))
+    val n = noseTipY
+    fill(fuseGrad) {
+        poly(DESIGN_CX, n, DESIGN_CX + 4, n + 4, DESIGN_CX + 10, n + 17, DESIGN_CX + 16, 96.0,
+             DESIGN_CX + 17, 132.0, DESIGN_CX + 14, 160.0, DESIGN_CX + 8, 176.0, DESIGN_CX, 184.0,
+             DESIGN_CX - 8, 176.0, DESIGN_CX - 14, 160.0, DESIGN_CX - 17, 132.0, DESIGN_CX - 16, 96.0,
+             DESIGN_CX - 10, n + 17, DESIGN_CX - 4, n + 4)
+    }
+    fill(RGBA(pal.dark.r, pal.dark.g, pal.dark.b, 107)) { // darker rounded nose cap
+        poly(DESIGN_CX - 10, n + 17, DESIGN_CX - 4, n + 4, DESIGN_CX, n, DESIGN_CX + 4, n + 4,
+             DESIGN_CX + 10, n + 17, DESIGN_CX + 9, n + 27, DESIGN_CX - 9, n + 27)
+    }
+    fill(RGBA(pal.spec.r, pal.spec.g, pal.spec.b, 128)) { // centreline sheen
+        poly(DESIGN_CX - 3, n + 8, DESIGN_CX, n + 2, DESIGN_CX + 3, n + 8,
+             DESIGN_CX + 3, 120.0, DESIGN_CX, 128.0, DESIGN_CX - 3, 120.0)
+    }
+    fill(pal.edge) { // twin nose-gun barrels
+        drrect(DESIGN_CX - 4, n - 8, 2.6, 13.0, 1.3)
+        drrect(DESIGN_CX + 1.4, n - 8, 2.6, 13.0, 1.3)
+    }
+    // Canopy bubble with two white reflection slivers.
+    fill(canG) {
+        poly(DESIGN_CX - 9, 136.0, DESIGN_CX, 132.0, DESIGN_CX + 9, 136.0,
+             DESIGN_CX + 10, 164.0, DESIGN_CX, 172.0, DESIGN_CX - 10, 164.0)
+    }
+    fill(RGBA(255, 255, 255, 102)) {
+        poly(DESIGN_CX - 6, 139.0, DESIGN_CX - 2, 137.0, DESIGN_CX - 3, 150.0, DESIGN_CX - 7, 151.0)
+    }
+    fill(RGBA(255, 255, 255, 41)) {
+        poly(DESIGN_CX + 3, 156.0, DESIGN_CX + 6, 156.0, DESIGN_CX + 5, 167.0, DESIGN_CX + 2, 166.0)
     }
 }
