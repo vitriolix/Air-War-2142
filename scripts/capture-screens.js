@@ -60,8 +60,9 @@ const H = Number(process.env.H || 1500);   // native logical canvas height
   await shot('1-menu');
 
   // Menu focus starts on START CAMPAIGN; Enter activates it → GameScene.
+  // Capture HUD early (800ms) so lives = 3 before enemies can reach the player.
   await page.keyboard.press('Enter');
-  await sleep(2500);
+  await sleep(800);
   await shot('2-hud');
 
   // P toggles pause → paused overlay.
