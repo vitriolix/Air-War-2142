@@ -586,7 +586,7 @@ class GameEngine(
                 if (enemy.type != EnemyType.BOSS && enemy.type != EnemyType.HEAVY_FIGHTER) {
                     destroyEnemy(enemy)
                 }
-                damagePlayer(2)
+                damagePlayer(1)
             }
         }
 
