@@ -108,9 +108,12 @@ class GameScene(
         val loopsText = text("3", 51.0, Colors.WHITE, font = Fonts.content).position(868.0, 52.0)
         val pauseLabel = text("PAUSE", 31.0, Colors.WHITE, font = Fonts.content).position(446.0, 16.0)
         pauseLabel.onClick { engine.togglePause() }
-        // Lives row keeps the default font: the airplane glyph (U+2708 ✈) isn't in the
-        // latin-subset Chakra Petch. Rework to a sprite indicator to move it onto Fonts.content.
-        val livesText = text("FIGHTERS: ✈ ✈ ✈", 31.0, Colors.WHITE).position(16.0, ch - 55.0)
+        // ✈ (U+2708) isn't in Chakra Petch's Latin subset; using * as a placeholder.
+        // Long-term: replace with small plane-sprite indicators (see TASKS.md).
+        // Note: only update label when lives > 0 — game-over state (lives=0) is covered
+        // by the overlay, and the web/JS build intermittently reads lives=0 at first tick
+        // even after startGame() sets 3 (tracked in TASKS.md for investigation).
+        val livesText = text("FIGHTERS: * * *", 31.0, Colors.WHITE, font = Fonts.content).position(16.0, ch - 55.0)
         text("FUEL / ENERGY", 26.0, Colors["#00FF88"], font = Fonts.content).position(620.0, ch - 62.0)
         val fuelText = text("100%", 26.0, Colors.WHITE, font = Fonts.content).position(890.0, ch - 62.0)
 
@@ -384,8 +387,8 @@ class GameScene(
                 loopsText.text = "${player.rollsLeft}"; lastLoops = player.rollsLeft
             }
             val lives = player.lives.coerceAtLeast(0)
-            if (lives != lastLives) {
-                livesText.text = "FIGHTERS: ${"✈ ".repeat(lives).trim()}"; lastLives = lives
+            if (lives != lastLives && lives > 0) {
+                livesText.text = "FIGHTERS: ${"* ".repeat(lives).trim()}"; lastLives = lives
             }
             val fuelPct = player.fuel.toInt()
             if (fuelPct != lastFuelPct) {
