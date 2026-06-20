@@ -1,0 +1,92 @@
+/* Shipped fonts — Wallpoet (title) + Chakra Petch (content), both SIL OFL 1.1.
+   Self-hosted from assets/fonts/ (latin subset, woff2) so the design system and
+   the game build are fully offline — no network/CDN dependency. */
+@font-face {
+  font-family: 'Wallpoet'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url(assets/fonts/Wallpoet-400.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Chakra Petch'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url(assets/fonts/ChakraPetch-400.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Chakra Petch'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url(assets/fonts/ChakraPetch-500.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Chakra Petch'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url(assets/fonts/ChakraPetch-600.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Chakra Petch'; font-style: normal; font-weight: 700; font-display: swap;
+  src: url(assets/fonts/ChakraPetch-700.woff2) format('woff2');
+}
+
+/* Air War 2142 — global design tokens (single source of truth in CSS form).
+   Transcribed from design-tokens.json, which mirrors the live Kotlin/KorGE source.
+   Every screen + foundation card also inlines these in its own :root so each file
+   stays self-contained (PROMPT.md §7), but this is the canonical token home the
+   design-system compiler reads. All sizes/positions are LOGICAL px (1000-wide
+   canvas; 1500 tall desktop/web, 2200 tall Android). */
+:root {
+  /* ── color ─────────────────────────────────────────────────────────── */
+  --cyan:             #00FFFF;  /* Menu "AIR WAR", primary borders */
+  --hud-cyan:         #00E5FF;  /* SCORE label, settings active, HUD accent */
+  --gold:             #FFCC00;  /* "2142" title, focus caret, score/credit values */
+  --orange:           #FF9900;  /* LOOPS label, ± stepper fills */
+  --green:            #00FF88;  /* fuel/energy, victory, SFX-on, RESUME GAME */
+  --red:              #E53935;  /* game over, danger, SAVE & EXIT */
+  --red-off:          #FF3333;  /* toggle-OFF text + 60a fill */
+  --white:            #FFFFFF;  /* primary text / HUD values */
+  --dark:             #1E272C;  /* settings bg, modal fill */
+  --ocean-top:        #0F2027;  /* ocean gradient stop 0.0 (window bg) */
+  --ocean-mid:        #203A43;  /* ocean gradient stop 0.5 */
+  --ocean-bottom:     #2C5364;  /* ocean gradient stop 1.0 */
+  --island-sand:      #E2D4A8;  /* island base disc */
+  --island-grass:     #2E8B57;  /* island grass disc (0.85 r) */
+  --island-grass-dark:#1E5B37;  /* island foliage detail */
+
+  /* ── recurring alpha fills — KorGE RGBA(r,g,b,a), a in 0-255 ─────────── */
+  --menu-button-fill:   rgba(0,0,0,.333);        /* RGBA(0,0,0,85) */
+  --hud-hint:           rgba(255,255,255,.502);  /* RGBA(255,255,255,128) */
+  --settings-label:     rgba(255,255,255,.698);  /* RGBA(255,255,255,178) */
+  --setting-active-bg:  rgba(0,229,255,.157);    /* RGBA(0,229,255,40) */
+  --setting-inactive-bg:rgba(255,255,255,.078);  /* RGBA(255,255,255,20) */
+  --overlay-paused:     rgba(0,0,0,.7);
+  --overlay-gameover:   rgba(0,0,0,.85);
+  --overlay-victory:    rgba(0,0,0,.8);
+
+  /* ── type scale — KorGE text(string, size, color) size arg, logical px ─ */
+  --t-title-gold:      184px;
+  --t-settings-title:  72px;
+  --t-title-cyan:      56px;
+  --t-overlay-victory: 82px;
+  --t-overlay-gameover:66px;
+  --t-overlay-paused:  56px;
+  --t-score:           51px;
+  --t-menu-button:     46px;
+  --t-settings-exit:   41px;
+  --t-overlay-sub:     36px;
+  --t-settings-item:   36px;
+  --t-hud-pause:       31px;
+  --t-hud-fighters:    31px;
+  --t-menu-hint:       31px;
+  --t-score-label:     28px;
+  --t-loops-label:     28px;
+  --t-hud-fuel:        26px;
+  --t-debug:           20px;
+
+  /* ── shipped fonts (chosen for the 1940s-meets-2142 brief) ───────────────
+     title  : Wallpoet     — cut-metal / gauge-faceplate hero (titles, overlay heads)
+     content: Chakra Petch — squared, machined-plate HUD & body
+     Both SIL OFL 1.1 — free to embed & ship with the game. Mockups load them
+     from Google Fonts; the build embeds the .woff2/.ttf directly. */
+  --font-title:   'Wallpoet', 'Courier New', monospace;
+  --font-content: 'Chakra Petch', 'Courier New', monospace;
+  --font: var(--font-content);   /* legacy alias → content */
+
+  /* logical canvas */
+  --canvas-w: 1000px;
+  --canvas-h-desktop: 1500px;
+  --canvas-h-android: 2200px;
+}

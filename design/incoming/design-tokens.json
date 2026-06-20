@@ -1,0 +1,108 @@
+{
+  "$comment": "Design tokens for Air War 2142. SINGLE SOURCE OF TRUTH for the round-trip with Claude Design. Values are transcribed from the live Kotlin/KorGE source (paths noted per token). All sizes/positions are in the game's LOGICAL canvas units: 1000 px wide, 1500 px tall on desktop/web, 2200 px tall on Android. Colors are sRGB; the `a` field is 0-255 (KorGE RGBA alpha), `hex` is the opaque #RRGGBB.",
+  "canvas": {
+    "logicalWidth": 1000,
+    "logicalHeightDesktop": 1500,
+    "logicalHeightAndroid": 2200,
+    "note": "main.kt opens Korge(windowWidth = 1000, windowHeight = CANVAS_HEIGHT). CANVAS_HEIGHT is 1500 on JVM/JS/Wasm, 2200 on Android. The HUD anchors to the bottom via `ch` (= canvas height), so bottom-row elements must be expressed relative to the bottom edge, not an absolute y.",
+    "origin": "top-left, y grows downward",
+    "source": "composeApp/src/commonMain/kotlin/main.kt"
+  },
+  "color": {
+    "$source": "scenes/*.kt, render/Shapes.kt",
+    "accentCyan":      { "hex": "#00FFFF", "use": "Menu title 'AIR WAR', primary borders" },
+    "hudCyan":         { "hex": "#00E5FF", "use": "SCORE label, settings active state, HUD accents" },
+    "gold":            { "hex": "#FFCC00", "use": "'2142' title, focus caret, score/credit values" },
+    "orange":          { "hex": "#FF9900", "use": "LOOPS label, secondary buttons" },
+    "green":           { "hex": "#00FF88", "use": "FUEL/ENERGY, victory, SFX-on, 'RESUME GAME'" },
+    "red":             { "hex": "#E53935", "use": "Game over, danger, 'SAVE & EXIT' (menu→settings exit)" },
+    "redOff":          { "hex": "#FF3333", "use": "Toggle-OFF text + 60-alpha fill (SFX OFF / DEBUG OFF)" },
+    "white":           { "hex": "#FFFFFF", "use": "Primary text / HUD values" },
+    "darkPanel":       { "hex": "#1E272C", "use": "Settings background, modal fill" },
+    "oceanTop":        { "hex": "#0F2027", "use": "Ocean gradient stop 0.0 (also window bgcolor)" },
+    "oceanMid":        { "hex": "#203A43", "use": "Ocean gradient stop 0.5" },
+    "oceanBottom":     { "hex": "#2C5364", "use": "Ocean gradient stop 1.0" },
+    "islandSand":      { "hex": "#E2D4A8", "use": "Island base disc" },
+    "islandGrass":     { "hex": "#2E8B57", "use": "Island grass disc (0.85 r)" },
+    "islandGrassDark": { "hex": "#1E5B37", "use": "Island foliage detail" },
+    "alpha": {
+      "$comment": "Recurring semi-transparent fills, written as KorGE RGBA(r,g,b,a) with a in 0-255.",
+      "menuButtonFill":   "RGBA(0,0,0,85)",
+      "hudHintText":      "RGBA(255,255,255,128)",
+      "settingsLabel":    "RGBA(255,255,255,178)",
+      "settingActiveBg":  "RGBA(0,229,255,40)",
+      "settingInactiveBg":"RGBA(255,255,255,20)",
+      "overlayPaused":    "BLACK @ alpha 0.7",
+      "overlayGameOver":  "BLACK @ alpha 0.85",
+      "overlayVictory":   "BLACK @ alpha 0.8"
+    }
+  },
+  "typography": {
+    "$source": "All sizes are the KorGE `text(string, size, color)` size argument in logical px. KorGE default bitmap font (system debug font) is the legacy renderer; the SHIPPED fonts are defined in `fonts` below.",
+    "fonts": {
+      "$comment": "Chosen fonts for the 1940s-meets-2142 brief. Both SIL OFL 1.1 — free to embed & ship. Self-hosted (latin-subset woff2) under assets/fonts/; @font-face declared in styles.css and inline in each screen, so everything works offline.",
+      "title":   { "family": "Wallpoet",     "weights": [400],                 "role": "hero title, overlay heads, settings title", "license": "OFL-1.1", "files": ["assets/fonts/Wallpoet-400.woff2"] },
+      "content": { "family": "Chakra Petch", "weights": [400,500,600,700],     "role": "HUD, buttons, body, settings rows, hints",     "license": "OFL-1.1", "files": ["assets/fonts/ChakraPetch-400.woff2","assets/fonts/ChakraPetch-500.woff2","assets/fonts/ChakraPetch-600.woff2","assets/fonts/ChakraPetch-700.woff2"] },
+      "cssFallback": "'Courier New', monospace"
+    },
+    "scale": {
+      "titleGold":     184,
+      "settingsTitle": 72,
+      "titleCyan":     56,
+      "overlayVictory":82,
+      "overlayGameOver":66,
+      "overlayPaused": 56,
+      "score":         51,
+      "menuButton":    46,
+      "settingsExit":  41,
+      "overlaySub":    36,
+      "settingsItem":  36,
+      "hudPause":      31,
+      "hudFighters":   31,
+      "menuHint":      31,
+      "scoreLabel":    28,
+      "loopsLabel":    28,
+      "hudFuel":       26,
+      "debugRow":      20
+    }
+  },
+  "panel": {
+    "$comment": "The current in-game UI is flat (solidRect + text). The 'glassmorphic' panel below is the ASPIRATIONAL target captured in spec.html — Claude Design may refine toward it, but see PROMPT.md 'KorGE mapping' for what is reproducible.",
+    "menuButton":  { "size": [840, 80], "fill": "RGBA(0,0,0,85)", "hitArea": "RGBA(0,0,0,1) overlay, same size" },
+    "settingsControls": {
+      "$comment": "SettingsScene.kt — flat solidRects, fully reproducible (no glass).",
+      "steeringRow":  { "size": [800, 80], "activeFill": "RGBA(0,229,255,40)", "activeText": "#00E5FF", "inactiveFill": "RGBA(255,255,255,20)", "inactiveText": "#FFFFFF" },
+      "sensStepper":  { "size": [80, 60], "fill": "#FF9900 (opaque orange)", "label": "white  -  /  +" },
+      "sfxToggle":    { "size": [280, 70], "onColor": "#00FF88", "offColor": "#FF3333", "fill": "<color> @ alpha 60", "text": "<color>" },
+      "debugToggle":  { "size": [440, 70], "onColor": "#00FF88", "offColor": "#FF3333", "fill": "<color> @ alpha 60", "text": "<color>" },
+      "exitButton":   { "size": [380, 80], "fromGame": "fill #00FF88, label 'RESUME GAME'", "fromMenu": "fill #E53935, label 'SAVE & EXIT'", "label": "white 41px" },
+      "focusCaret":   { "size": [18, 44], "fill": "#FFCC00" }
+    },
+    "glassAspirational": {
+      "fill": "rgba(0,0,0,0.33)",
+      "border": "1-2px solid <accent>",
+      "radius": "12-24px",
+      "titleGlow": "0 0 32px rgba(0,255,255,0.3)"
+    }
+  },
+  "sprites": {
+    "$comment": "Real game art (NOT emoji — see spec.html's sprite gallery). Atlas committed at composeApp/src/commonMain/resources/sprites.{png,txt}; designExport copies it into design/assets/. sprites.txt columns are `name atlasX atlasY atlasW atlasH hotspotX hotspotY` — the LAST TWO ARE THE HOTSPOT (draw pivot), NOT the display size. The atlas is baked at AtlasSpec.BAKE_SCALE = 3.0, so display (on-screen logical px) = atlasW/3 × atlasH/3. Each slice below gives [atlasW, atlasH], display, and hotspot (in 3x atlas px).",
+    "atlasSize": [2048, 2048],
+    "bakeScale": 3.0,
+    "slices": {
+      "player_normal":       { "atlas": [270, 314], "display": [90, 105],  "hotspot": [135, 150] },
+      "player_escorts":      { "atlas": [594, 314], "display": [198, 105], "hotspot": [297, 150] },
+      "player_roll":         { "atlas": [270, 285], "display": [90, 95],   "hotspot": [135, 150] },
+      "enemy_scout":         { "atlas": [342, 195], "display": [114, 65],  "hotspot": [171, 114] },
+      "enemy_diver":         { "atlas": [420, 225], "display": [140, 75],  "hotspot": [210, 131] },
+      "enemy_squadron_red":  { "atlas": [324, 191], "display": [108, 64],  "hotspot": [162, 109] },
+      "enemy_heavy_fighter": { "atlas": [360, 276], "display": [120, 92],  "hotspot": [180, 144] },
+      "enemy_boss":          { "atlas": [750, 486], "display": [250, 162], "hotspot": [375, 243] },
+      "bullet_player":       { "atlas": [24, 84],   "display": [8, 28],    "hotspot": [12, 42] },
+      "bullet_enemy":        { "atlas": [48, 48],   "display": [16, 16],   "hotspot": [24, 24] },
+      "island":              { "atlas": [615, 615], "display": [205, 205], "hotspot": [315, 315] },
+      "cloud":               { "atlas": [567, 300], "display": [189, 100], "hotspot": [297, 150] },
+      "powerup":             { "atlas": [150, 150], "display": [50, 50],   "hotspot": [75, 75] }
+    }
+  }
+}
