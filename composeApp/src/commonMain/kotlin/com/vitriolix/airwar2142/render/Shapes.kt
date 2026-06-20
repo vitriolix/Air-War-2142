@@ -222,30 +222,39 @@ internal fun ShapeBuilder.drawEnemyBulletShape() {
 // Handoff coordinate constants.
 private const val DESIGN_CX = 140.0        // centreline
 private const val DESIGN_CY = 188.0        // vertical pivot → engine origin (≈ airframe centroid)
-private const val DESIGN_FULL_SPAN = 372.0 // full wingspan (2 * span 186) → maps to PlayerState.width
+private const val DESIGN_FULL_SPAN = 372.0 // full wingspan (2 * span 186)
+
+// On-screen sizing knobs (tunable). The handoff geometry is historically accurate
+// (wingspan:length ≈ 1.36), which reads wide-and-flat in a vertical shmup, so the
+// art is rendered larger than the gameplay footprint and stretched vertically for a
+// taller, more directional silhouette.
+private const val PLANE_RENDER_SCALE = 2.0 // on-screen size vs the PlayerState.width footprint
+private const val PLANE_VSTRETCH = 1.25    // extra vertical elongation (Y scale = X scale × this)
 
 @Suppress("UNUSED_PARAMETER")
 internal fun ShapeBuilder.drawPlayer(p: PlayerState, tick: Long) {
     val pal = PlanePalette.DEFAULT
-    // px-per-design-unit so the full wingspan renders at PlayerState.width.
-    val u = p.width / DESIGN_FULL_SPAN
+    // px-per-design-unit. Horizontal maps the full wingspan to width×RENDER_SCALE;
+    // vertical adds VSTRETCH on top so the plane reads longer than the raw geometry.
+    val ux = p.width / DESIGN_FULL_SPAN * PLANE_RENDER_SCALE
+    val uy = ux * PLANE_VSTRETCH
 
     // Escort wingmen (0.5 scale) flank the leader, drawn behind it.
     if (p.escortsActive && p.rollProgress == 0f) {
-        val ex = p.width * 0.82
-        val ey = p.width * 0.10
-        drawAirframe(pal, -ex, ey, u * 0.5)
-        drawAirframe(pal,  ex, ey, u * 0.5)
+        val ex = p.width * 0.82 * PLANE_RENDER_SCALE
+        val ey = p.width * 0.10 * PLANE_RENDER_SCALE
+        drawAirframe(pal, -ex, ey, ux * 0.5, uy * 0.5)
+        drawAirframe(pal,  ex, ey, ux * 0.5, uy * 0.5)
     }
 
-    drawAirframe(pal, 0.0, 0.0, u)
+    drawAirframe(pal, 0.0, 0.0, ux, uy)
 }
 
-// Draws one whole airframe centred at (ox,oy) with [u] px per handoff design-unit.
-private fun ShapeBuilder.drawAirframe(pal: PlanePalette, ox: Double, oy: Double, u: Double) {
+// Draws one whole airframe centred at (ox,oy) with [ux]/[uy] px per handoff design-unit.
+private fun ShapeBuilder.drawAirframe(pal: PlanePalette, ox: Double, oy: Double, ux: Double, uy: Double) {
     val sb = this
-    fun X(x: Double) = (x - DESIGN_CX) * u + ox
-    fun Y(y: Double) = (y - DESIGN_CY) * u + oy
+    fun X(x: Double) = (x - DESIGN_CX) * ux + ox
+    fun Y(y: Double) = (y - DESIGN_CY) * uy + oy
     // Filled polygon from flat design-coord pairs (x0,y0,x1,y1,…).
     fun poly(vararg c: Double) {
         sb.moveTo(X(c[0]), Y(c[1]))
@@ -253,10 +262,9 @@ private fun ShapeBuilder.drawAirframe(pal: PlanePalette, ox: Double, oy: Double,
         while (i < c.size) { sb.lineTo(X(c[i]), Y(c[i + 1])); i += 2 }
         sb.close()
     }
-    fun dcircle(x: Double, y: Double, r: Double) = sb.circle(X(x), Y(y), r * u)
-    fun dellipse(x: Double, y: Double, rx: Double, ry: Double) = sb.ellipse(X(x), Y(y), rx * u, ry * u)
+    fun dellipse(x: Double, y: Double, rx: Double, ry: Double) = sb.ellipse(X(x), Y(y), rx * ux, ry * uy)
     fun drrect(x: Double, y: Double, w: Double, h: Double, r: Double) =
-        sb.roundRect(X(x), Y(y), w * u, h * u, r * u, r * u)
+        sb.roundRect(X(x), Y(y), w * ux, h * uy, r * ux, r * ux)
 
     val gap = 64.0; val span = 186.0
     val lbx = DESIGN_CX - gap; val rbx = DESIGN_CX + gap
@@ -371,7 +379,7 @@ private fun ShapeBuilder.drawAirframe(pal: PlanePalette, ox: Double, oy: Double,
     }
 
     // ── Gondola pod + canopy bubble + nose guns ──
-    val canG = RadialGradientPaint(X(139.0), Y(143.0), 0.0, X(DESIGN_CX), Y(152.0), 22.0 * u)
+    val canG = RadialGradientPaint(X(139.0), Y(143.0), 0.0, X(DESIGN_CX), Y(152.0), 22.0 * ux)
         .addColorStop(0.0, pal.canopyHi)
         .addColorStop(0.55, shade(pal.canopyInner, 6.0))
         .addColorStop(1.0, shade(pal.canopyInner, -10.0))
