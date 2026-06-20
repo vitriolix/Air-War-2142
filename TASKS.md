@@ -79,6 +79,7 @@ as a sequence of small, perf-gated PRs, game playable at every merge. See
 - [x] **PR #21** — design: add Code→Design drop history log (superseded by broader DESIGN_HISTORY in PR #23) → **merged**
 - [x] **PR #22** — Board: track Code↔Design motion/animation round-trip gap → **merged**
 - [x] **PR #23** — design: per-release Design history + bundle snapshots (`DESIGN_HISTORY.md` + `design/design-history/seed/`) → **merged**
+- [x] **PR #27** — Design review round 2: B1 FIGHTERS life indicator (✈→* placeholder, lives>0 guard); enemy body collision damage 2→1 → **merged**
 - [x] **PR #25** — Controller Preferences Phase 3: `ControllerPrefsScene.kt` new screen (bindings, INVERT Y, STICK DEAD ZONE slider, ESC/BACK); Settings title → SETTINGS, ghost exit button, grey debug-off; all button text + caret v-centered via `text.height`; slider as single focus stop with left/right key support → **merged**
 - [x] **PR #24** — Controller Preferences round-trip Phase 1: brief (`design/requests/controller-prefs.md`) authored and pushed to claude.ai/design → **merged**
 - [x] **Claude Design round-trip** — `design/` handoff workspace + `designExport`/`designImport` tooling shipped (PR #15); the spec bundle is now seeded into the `Air War 2142` claude.ai/design project. Remaining follow-ups extracted as their own **Doing** tasks (resvg bake pipeline; Game Over / Victory capture).
