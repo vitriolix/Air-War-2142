@@ -81,19 +81,20 @@ class MenuScene(
 
         // Expanded: editor — field (label + value + blinking caret) and the COPY/PASTE/ROLL row.
         val editor = container { visible = false }
+        editor.solidRect(1000.0, 250.0, RGBA(0, 0, 0, 140)).position(0.0, seedRowY - 10.0)   // scrim behind editor
         editor.solidRect(840.0, 80.0, RGBA(0, 229, 255, 40)).position(80.0, seedRowY)   // editingFill
-        editor.text("SEED", 26.0, RGBA(255, 255, 255, 160), font = Fonts.content).position(104.0, seedRowY + 8.0)
-        val fieldValue = editor.text("", 38.0, Colors["#FFCC00"], font = Fonts.content).position(104.0, seedRowY + 36.0)
-        val textCaret = editor.solidRect(4.0, 40.0, Colors.WHITE).position(104.0, seedRowY + 34.0)
+        editor.text("SEED", 26.0, RGBA(255, 255, 255, 160), font = Fonts.content).position(104.0, seedRowY + 6.0)
+        val fieldValue = editor.text("", 36.0, Colors["#FFCC00"], font = Fonts.content).position(104.0, seedRowY + 38.0)
+        val textCaret = editor.solidRect(4.0, 36.0, Colors.WHITE).position(104.0, seedRowY + 38.0)
 
         // Action row (150×72 ghost rects) at y=980. activate() handlers do the work.
         val copyBtnFill = editor.solidRect(150.0, 72.0, RGBA(255, 255, 255, 20)).position(80.0, 980.0)
         val copyBtnLabel = editor.text("COPY", 34.0, Colors.WHITE, font = Fonts.content)
         copyBtnLabel.position(80.0 + (150.0 - copyBtnLabel.width) / 2.0, 980.0 + 19.0)
         editor.solidRect(150.0, 72.0, RGBA(255, 255, 255, 20)).position(246.0, 980.0)
-        actionLabel(editor, "PASTE", 246.0)
+        val pasteBtnLabel = actionLabel(editor, "PASTE", 246.0)
         editor.solidRect(150.0, 72.0, RGBA(255, 255, 255, 20)).position(412.0, 980.0)
-        actionLabel(editor, "ROLL", 412.0)
+        val rollBtnLabel = actionLabel(editor, "ROLL", 412.0)
         editor.text("Type or paste a seed  •  Saved automatically  •  Esc to close",
             28.0, RGBA(255, 255, 255, 128), font = Fonts.content).position(60.0, 1080.0)
 
@@ -110,7 +111,7 @@ class MenuScene(
             collapsedValue.text = SeedField.value
             collapsedValue.x = 892.0 - collapsedValue.width            // right-anchored inside the row
             fieldValue.text = SeedField.value
-            textCaret.x = 104.0 + fieldValue.width + 6.0               // caret trails the value
+            textCaret.x = 104.0 + fieldValue.width + 2.0               // caret trails the value
         }
         refreshSeed = ::refresh
 
@@ -179,6 +180,8 @@ class MenuScene(
                 copyBtnLabel.text = "COPY"; copyBtnLabel.color = Colors.WHITE
             }
             copyBtnLabel.x = 80.0 + (150.0 - copyBtnLabel.width) / 2.0
+            pasteBtnLabel.x = 246.0 + (150.0 - pasteBtnLabel.width) / 2.0
+            rollBtnLabel.x = 412.0 + (150.0 - rollBtnLabel.width) / 2.0
         }
     }
 
@@ -188,9 +191,10 @@ class MenuScene(
         solidRect(840.0, 80.0, RGBA(0, 0, 0, 1)).position(x, y).onClickSuspend(views.coroutineContext) { action() }
     }
 
-    private fun actionLabel(parent: Container, label: String, rectX: Double) {
+    private fun actionLabel(parent: Container, label: String, rectX: Double): Text {
         val t = parent.text(label, 34.0, Colors.WHITE, font = Fonts.content)
         t.position(rectX + (150.0 - t.width) / 2.0, 980.0 + 19.0)
+        return t
     }
 }
 

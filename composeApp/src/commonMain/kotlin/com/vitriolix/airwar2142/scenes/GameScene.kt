@@ -172,7 +172,8 @@ class GameScene(
         val seedLabel = text("SEED:", 36.0, RGBA(255, 255, 255, 160), font = Fonts.content).position(80.0, 1010.0)
         val seedValue = text("", 36.0, Colors["#00E5FF"], font = Fonts.content).position(80.0 + seedLabel.width + 14.0, 1010.0)
         val copySeedRect = solidRect(320.0, 72.0, RGBA(255, 255, 255, 20)).position(500.0, 992.0)
-        val copySeedLabel = text("[ C ]  COPY SEED", 36.0, Colors.WHITE, font = Fonts.content).position(520.0, 1008.0)
+        val copySeedLabel = text("[ C ]  COPY SEED", 36.0, Colors.WHITE, font = Fonts.content).position(500.0, 1010.0)
+        copySeedLabel.x = 500.0 + (320.0 - copySeedLabel.width) / 2.0
         seedLabel.visible = false; seedValue.visible = false
         copySeedRect.visible = false; copySeedLabel.visible = false
 
@@ -425,6 +426,8 @@ class GameScene(
             seedLabel.visible = showSeed; seedValue.visible = showSeed
             copySeedRect.visible = showSeed; copySeedLabel.visible = showSeed
             if (!showSeed) pauseCopyFlash = 0
+            // Center COPY SEED label (re-center after font layout each frame).
+            copySeedLabel.x = 500.0 + (320.0 - copySeedLabel.width) / 2.0
 
             // ── Overlay state ─────────────────────────────────────────────────
             when (state) {
