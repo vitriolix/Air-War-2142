@@ -62,6 +62,7 @@ tasks.register<RenderDocs>("renderDocs") { group = gameGroup; description = "Ren
 tasks.register<PrOpen>("openPr")         { group = gameGroup; description = "Open a GitHub PR's page in the browser. --pr=<number|branch> (default: current branch)." }
 tasks.register<DesignExport>("designExport") { group = gameGroup; description = "Code → Claude Design: stage the design/ handoff bundle (refresh assets, open spec, print push steps)." }
 tasks.register<DesignImport>("designImport") { group = gameGroup; description = "Claude Design → Code: review refined files dropped in design/incoming/ and print how to apply them." }
+tasks.register<DesignPush>("designPush")     { group = gameGroup; description = "Code → Claude Design: compute the Code-owned push manifest (design/.design-push-manifest.json) for /design-sync to upload." }
 tasks.register<Exec>("captureScreens") {
     group = gameGroup
     description = "Recapture design/screens/*.png from the live web build. HEADED + 1:1 only — never headless (SwiftShader fakes SDF text slivers); see scripts/capture-screens.js."
