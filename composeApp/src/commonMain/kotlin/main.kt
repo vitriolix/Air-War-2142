@@ -13,6 +13,7 @@ import com.vitriolix.airwar2142.scenes.GameScene
 import com.vitriolix.airwar2142.scenes.KeyboardNavigable
 import com.vitriolix.airwar2142.scenes.MenuScene
 import com.vitriolix.airwar2142.scenes.SettingsScene
+import com.vitriolix.airwar2142.scenes.TextInputTarget
 
 suspend fun main() = Korge(
     windowWidth = 1000,
@@ -66,6 +67,26 @@ suspend fun main() = Korge(
         down(Key.DOWN)  { navFocus()?.move(+1) }
         down(Key.LEFT)  { navFocus()?.activateLeft() }
         down(Key.RIGHT) { navFocus()?.activateRight() }
+        // ── Text entry (seed field) ─────────────────────────────────────────────
+        // Routed stage-level like the rest; the scene gates whether it's capturing.
+        // Digits only (seeds are numeric for now); backspace edits. No per-frame polling.
+        down(Key.BACKSPACE) { (sc.currentScene as? TextInputTarget)?.onBackspace() }
+        down { ev ->
+            // Digit chars are unreliable on JS key-down (same reason the grave handler uses keyCode);
+            // derive the digit from keyCode: 48–57 top row, 96–105 numpad. character is a fallback.
+            val kc = ev.keyCode
+            val c: Char? = when {
+                kc in 48..57  -> '0' + (kc - 48)
+                kc in 96..105 -> '0' + (kc - 96)
+                ev.character.isDigit() -> ev.character
+                else -> null
+            }
+            if (c != null) (sc.currentScene as? TextInputTarget)?.onChar(c)
+        }
+        // [C] copies the seed on the pause overlay (the Menu editor's COPY is a focus item).
+        down(Key.C) {
+            if (engine.gameState.value == GameState.PAUSED) (sc.currentScene as? GameScene)?.copySeedFromPause()
+        }
         // ~ (backtick/tilde key) toggles the debug overlay, console-style.
         // The grave key maps to DIFFERENT Key enums per backend: JVM/AWT → Key.BACKQUOTE,
         // Android → Key.GRAVE. Match both (plus the typed character as a layout-agnostic

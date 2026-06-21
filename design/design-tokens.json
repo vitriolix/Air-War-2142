@@ -94,6 +94,12 @@
     "invertY":        { "default": false, "onColor": "#00FF88", "offColor": "#999999", "offFill": "RGBA(128,128,128,60)" },
     "deadzone":       { "default": 0.15, "min": 0.00, "max": 0.50, "step": 0.05 }
   },
+  "seed": {
+    "$comment": "Menu seed editor + Pause seed line (Design round 3, requests/round3-seed-display.md). Reuses menu-button-fill / ghost-fill / hudCyan / gold / green / white-160. Seed value is a friendly string (digits now; later named e.g. HALLOWEEN), field >= ~16 chars; a registry maps string -> 64-bit seed (TASKS task-21). Seed plumbing is mocked (SeedField) until task-21/23.",
+    "field":       { "fill": "RGBA(0,0,0,85)", "editingFill": "RGBA(0,229,255,40)", "labelColor": "RGBA(255,255,255,160)", "valueColor": "#FFCC00", "maxLen": 16 },
+    "copiedFlash": { "fill": "RGBA(0,255,136,40)", "labelColor": "#00FF88", "timeoutMs": 1200 },
+    "pauseLine":   { "labelColor": "RGBA(255,255,255,160)", "valueColor": "#00E5FF" }
+  },
   "sprites": {
     "$comment": "Real game art (NOT emoji — see spec.html's sprite gallery). Atlas committed at composeApp/src/commonMain/resources/sprites.{png,txt}; designExport copies it into design/assets/. sprites.txt columns are `name atlasX atlasY atlasW atlasH hotspotX hotspotY` — the LAST TWO ARE THE HOTSPOT (draw pivot), NOT the display size. The atlas is baked at AtlasSpec.BAKE_SCALE = 3.0, so display (on-screen logical px) = atlasW/3 × atlasH/3. Each slice below gives [atlasW, atlasH], display, and hotspot (in 3x atlas px).",
     "atlasSize": [2048, 2048],

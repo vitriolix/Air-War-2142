@@ -1,0 +1,229 @@
+<!-- @dsCard group="Screens" viewport="3260x1620" name="Main Menu — Seed Entry" subtitle="MenuScene.kt — SEED menu item → seed editor (§5.1 + round3)" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Air War 2142 — Main Menu (Seed)</title>
+<style>
+  @font-face { font-family:'Wallpoet'; font-weight:400; font-display:swap; src:url(../assets/fonts/Wallpoet-400.ttf) format('truetype'); }
+  @font-face { font-family:'Chakra Petch'; font-weight:400; font-display:swap; src:url(../assets/fonts/ChakraPetch-400.ttf) format('truetype'); }
+  @font-face { font-family:'Chakra Petch'; font-weight:500; font-display:swap; src:url(../assets/fonts/ChakraPetch-500.ttf) format('truetype'); }
+  @font-face { font-family:'Chakra Petch'; font-weight:600; font-display:swap; src:url(../assets/fonts/ChakraPetch-600.ttf) format('truetype'); }
+  @font-face { font-family:'Chakra Petch'; font-weight:700; font-display:swap; src:url(../assets/fonts/ChakraPetch-700.ttf) format('truetype'); }
+</style>
+<style>
+  /* ── DESIGN TOKENS (design-tokens.json) ──────────────────────────────── */
+  :root {
+    --cyan:#00FFFF; --hud-cyan:#00E5FF; --gold:#FFCC00; --orange:#FF9900;
+    --green:#00FF88; --red:#E53935; --white:#FFFFFF; --dark:#1E272C;
+    --grey-off:#999999;
+    --ocean-top:#0F2027; --ocean-mid:#203A43; --ocean-bottom:#2C5364;
+    --island-sand:#E2D4A8; --island-grass:#2E8B57; --island-grass-dark:#1E5B37;
+    --menu-button-fill:rgba(0,0,0,.333);           /* RGBA(0,0,0,85) */
+    --ghost-fill:rgba(255,255,255,.078);           /* RGBA(255,255,255,20) */
+    --label-160:rgba(255,255,255,.627);            /* RGBA(255,255,255,160) */
+    --hud-hint:rgba(255,255,255,.502);             /* RGBA(255,255,255,128) */
+    /* refine: new token seed.field.editingFill — RGBA(0,229,255,40) */
+    --seed-editing:rgba(0,229,255,.157);
+    /* refine: new token seed.copiedFlash — RGBA(0,255,136,40) confirm fill (shared w/ pause) */
+    --seed-copied-flash:rgba(0,255,136,.157);
+    /* type scale (logical px) */
+    --t-title-gold:184px; --t-title-cyan:56px; --t-menu-button:46px; --t-menu-hint:31px;
+    --font-title:   'Wallpoet', 'Courier New', monospace;
+    --font-content: 'Chakra Petch', 'Courier New', monospace;
+    --font: var(--font-content);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:100%; height:100%; background:#0b0f12; overflow:hidden; }
+  body { display:flex; align-items:center; justify-content:center; font-family:var(--font); }
+
+  .board { display:flex; gap:80px; flex:none; transform-origin:center center; }
+  .frame { display:flex; flex-direction:column; gap:18px; }
+  .vlabel { font-family:'Courier New', monospace; font-size:26px; letter-spacing:2px;
+    color:rgba(255,255,255,.5); text-transform:uppercase; }
+  .vlabel b { color:rgba(255,255,255,.85); font-weight:700; }
+
+  .stage {
+    position:relative; width:1000px; height:1500px; flex:none; overflow:hidden;
+    background:linear-gradient(to bottom, var(--ocean-top), var(--ocean-mid), var(--ocean-bottom));
+  }
+
+  /* Background islands */
+  .island { position:absolute; border-radius:50%; background:var(--island-sand); }
+  .island .grass { position:absolute; inset:7.5%; border-radius:50%; background:var(--island-grass); }
+  .island .foliage { position:absolute; border-radius:50%; background:var(--island-grass-dark); }
+
+  /* Title block */
+  .t-airwar { position:absolute; left:90px; top:200px; font-size:var(--t-title-cyan);
+    font-weight:400; line-height:1; font-family:var(--font-title); color:var(--cyan); }
+  .t-2142   { position:absolute; left:80px; top:260px; font-size:var(--t-title-gold);
+    font-weight:400; line-height:1; font-family:var(--font-title); color:var(--gold); }
+
+  /* Menu buttons — 840×80 */
+  .btn { position:absolute; width:840px; height:80px; left:80px; background:var(--menu-button-fill); }
+  .btn .label { position:absolute; left:24px; top:14px; font-size:var(--t-menu-button);
+    font-weight:600; line-height:1; white-space:nowrap; color:var(--white); }
+  .btn-start { top:640px; }
+  .btn-settings { top:760px; }
+
+  /* Gold focus caret — 20×52, caretX = control.x − 52 */
+  .caret { position:absolute; width:20px; height:52px; background:var(--gold); }
+
+  .hint { position:absolute; left:60px; top:1440px; font-size:var(--t-menu-hint);
+    font-weight:700; line-height:1; color:var(--hud-hint); }
+
+  /* ── round3: SEED menu item → expands to seed editor ────────────────── */
+  /* refine: collapsed default is a normal ALLCAPS menu item (matches .btn). Activating
+     it swaps the row in-place to the seed editor (field + PASTE / COPY / ROLL). */
+  .seedbtn { position:absolute; left:80px; top:880px; width:840px; height:80px;
+    background:var(--menu-button-fill);
+    display:flex; align-items:center; justify-content:space-between; padding:0 28px; }
+  .seedbtn .label { font-size:var(--t-menu-button); font-weight:600; line-height:1;
+    white-space:nowrap; color:var(--white); }
+  .seedbtn .val { font-size:40px; font-weight:600; line-height:1; color:var(--gold); }
+
+  /* expanded: editor field — 840×80 (full menu width) so the swap reads as in-place */
+  .seedfield { position:absolute; left:80px; top:880px; width:840px; height:80px;
+    background:var(--menu-button-fill);
+    /* refine: label/value vertically centered as a flex stack with a gap so the SEED
+       label clears the number tops and the value gets even top/bottom padding */
+    display:flex; flex-direction:column; justify-content:center; gap:9px; padding-left:24px; }
+  .seedfield.editing { background:var(--seed-editing); }   /* refine: editing sub-state */
+  .sf-label { font-size:26px; font-weight:600; line-height:1; color:var(--label-160); }
+  .sf-valrow { display:flex; align-items:center; gap:6px; }
+  .sf-val { font-size:38px; font-weight:600; line-height:1; color:var(--gold); }
+  /* text-entry caret — declarative state (the Code side renders the blink) */
+  .tcaret { width:4px; height:40px; background:var(--white); }
+
+  /* action row — PASTE / COPY / ROLL — 150×72 ghost rects at y=980 */
+  .mbtn { position:absolute; top:980px; width:150px; height:72px; background:var(--ghost-fill);
+    display:flex; align-items:center; justify-content:center; }
+  .mbtn span { font-size:34px; font-weight:600; line-height:1; color:var(--white); }
+  .mbtn-copy  { left:80px; }
+  .mbtn-paste { left:246px; }
+  .mbtn-roll  { left:412px; }
+  /* refine: 'ROLL' over 🎲 dice glyph (font coverage / flat-style fit) */
+  /* refine: PASTE disabled variant — ghost fill kept, label greyed #999999 */
+  .mbtn.disabled span { color:var(--grey-off); }
+  /* COPY confirm — green flash fill + green label (shared w/ pause COPY SEED) */
+  .mbtn.copied { background:var(--seed-copied-flash); }
+  .mbtn.copied span { color:var(--green); }
+
+  /* editing hint — refine: spec is 31px but the full string clips the 1000px canvas;
+     28px @ x=60 fits the whole hint. Round-trip note: KorGE text() at 31px would clip too. */
+  .edithint { position:absolute; left:60px; top:1080px; font-size:28px; font-weight:600;
+    line-height:1; white-space:nowrap; color:var(--hud-hint); }
+</style>
+</head>
+<body>
+  <div class="board">
+
+    <!-- ── COLLAPSED: SEED as a normal ALLCAPS menu item (default) ─────── -->
+    <div class="frame">
+      <div class="vlabel">Menu · <b>collapsed (SEED menu item)</b></div>
+      <div class="stage" data-base>
+        <!-- refine: collapsed default — normal menu item; value previewed in gold on the right -->
+        <div class="seedbtn">
+          <div class="label">SEED</div>
+          <div class="val">4815162342</div>
+        </div>
+        <!-- focus on START CAMPAIGN (original default) -->
+        <div class="caret" style="left:28px; top:654px;"></div>
+      </div>
+    </div>
+
+    <!-- ── EXPANDED: activated → seed editor (field + PASTE/COPY/ROLL) ── -->
+    <div class="frame">
+      <div class="vlabel">Menu · <b>expanded (editing)</b></div>
+      <div class="stage" data-base>
+        <div class="seedfield editing">
+          <div class="sf-label">SEED</div>
+          <div class="sf-valrow"><span class="sf-val">4815162342</span><span class="tcaret"></span></div>
+        </div>
+        <div class="mbtn mbtn-paste"><span>PASTE</span></div>
+        <div class="mbtn mbtn-copy"><span>COPY</span></div>
+        <div class="mbtn mbtn-roll"><span>ROLL</span></div>
+        <!-- refine: changes save immediately on edit (no confirm step); Esc returns to display-only -->
+        <div class="edithint">Type or paste a seed&nbsp;•&nbsp;Saved automatically&nbsp;•&nbsp;Esc to close</div>
+        <!-- focus caret on SEED field — caretX = 80−52 = 28; centered on 80-tall field -->
+        <div class="caret" style="left:28px; top:894px;"></div>
+      </div>
+    </div>
+
+    <!-- ── EXPANDED · COPIED: COPY activated → transient confirm ───────── -->
+    <div class="frame">
+      <div class="vlabel">Menu · <b>expanded · copied (≈1.2s)</b></div>
+      <div class="stage" data-base>
+        <div class="seedfield">
+          <div class="sf-label">SEED</div>
+          <div class="sf-valrow"><span class="sf-val">4815162342</span></div>
+        </div>
+        <div class="mbtn mbtn-paste"><span>PASTE</span></div>
+        <!-- refine: new token seed.copiedTimeout ≈ 1.2s — COPIED flash, then reverts -->
+        <div class="mbtn mbtn-copy copied"><span>COPIED&nbsp;✓</span></div>
+        <div class="mbtn mbtn-roll"><span>ROLL</span></div>
+        <!-- focus caret on COPY — caretX = 80−52 = 28; centered on 72-tall button -->
+        <div class="caret" style="left:28px; top:990px;"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- shared background (islands + title + buttons + hint), cloned into each stage -->
+  <template id="base">
+    <div class="island" style="left:120px; top:-55px; width:210px; height:210px;">
+      <div class="grass"></div>
+      <div class="foliage" style="left:26%; top:30%; width:34%; height:34%;"></div>
+      <div class="foliage" style="left:48%; top:46%; width:26%; height:26%;"></div>
+    </div>
+    <div class="island" style="left:-55px; top:150px; width:290px; height:290px;">
+      <div class="grass"></div>
+      <div class="foliage" style="left:24%; top:28%; width:38%; height:38%;"></div>
+      <div class="foliage" style="left:48%; top:48%; width:26%; height:26%;"></div>
+    </div>
+    <div class="island" style="left:25px; top:450px; width:340px; height:340px;">
+      <div class="grass"></div>
+      <div class="foliage" style="left:24%; top:26%; width:38%; height:38%;"></div>
+      <div class="foliage" style="left:46%; top:48%; width:28%; height:28%;"></div>
+    </div>
+    <div class="island" style="left:255px; top:500px; width:375px; height:375px;">
+      <div class="grass"></div>
+      <div class="foliage" style="left:26%; top:28%; width:36%; height:36%;"></div>
+      <div class="foliage" style="left:48%; top:50%; width:26%; height:26%;"></div>
+    </div>
+    <div class="island" style="left:200px; top:1005px; width:190px; height:190px;">
+      <div class="grass"></div>
+      <div class="foliage" style="left:24%; top:30%; width:36%; height:36%;"></div>
+      <div class="foliage" style="left:48%; top:46%; width:26%; height:26%;"></div>
+    </div>
+    <div class="island" style="left:870px; top:1390px; width:200px; height:200px;">
+      <div class="grass"></div>
+      <div class="foliage" style="left:22%; top:30%; width:36%; height:36%;"></div>
+      <div class="foliage" style="left:46%; top:46%; width:26%; height:26%;"></div>
+    </div>
+    <div class="t-airwar">AIR WAR</div>
+    <div class="t-2142">2142</div>
+    <div class="btn btn-start"><div class="label">START CAMPAIGN</div></div>
+    <div class="btn btn-settings"><div class="label">SETTINGS &amp; INPUTS</div></div>
+    <div class="hint">WASD to move&nbsp;&nbsp;•&nbsp;&nbsp;Space to fire&nbsp;&nbsp;•&nbsp;&nbsp;R to loop</div>
+  </template>
+
+  <script>
+    (function () {
+      var tpl = document.getElementById('base');
+      document.querySelectorAll('.stage[data-base]').forEach(function (st) {
+        st.insertBefore(tpl.content.cloneNode(true), st.firstChild);
+      });
+      var board = document.querySelector('.board');
+      function fit() {
+        var k = Math.min(window.innerWidth / board.scrollWidth, window.innerHeight / board.scrollHeight);
+        board.style.transform = 'scale(' + k + ')';
+      }
+      window.addEventListener('resize', fit);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+      fit();
+    })();
+  </script>
+</body>
+</html>
