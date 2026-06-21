@@ -20,6 +20,17 @@ interface EscapeHandler {
 }
 
 /**
+ * A scene that accepts character text entry (e.g. the seed field). Central key dispatch (main.kt)
+ * routes typed characters + backspace here — kept on the stage like the rest of key handling, since
+ * scene-local key handlers aren't guaranteed to receive events. The scene decides whether it's
+ * currently capturing; return true if the input was consumed (so the dispatcher can stop).
+ */
+interface TextInputTarget {
+    fun onChar(c: Char): Boolean
+    fun onBackspace(): Boolean
+}
+
+/**
  * Drives focus across a list of selectable items, independent of input source.
  * A single [caret] view is moved to mark the focused item.
  *
@@ -52,6 +63,12 @@ class FocusController {
     ): Int {
         items += Item(caretX, caretY, activate, leftAct, rightAct)
         return items.size - 1
+    }
+
+    /** Clear all registered items (to rebuild focus when the UI changes, e.g. expand/collapse). */
+    fun reset() {
+        items.clear()
+        index = 0
     }
 
     /** Place initial focus (clamped) and show the caret. */

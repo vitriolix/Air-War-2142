@@ -16,6 +16,7 @@ import com.vitriolix.airwar2142.CANVAS_HEIGHT
 import com.vitriolix.airwar2142.ecs.Particle
 import com.vitriolix.airwar2142.ecs.Position
 import com.vitriolix.airwar2142.logic.*
+import com.vitriolix.airwar2142.platform.Clipboard
 import com.vitriolix.airwar2142.render.*
 import kotlin.math.*
 
@@ -23,6 +24,18 @@ class GameScene(
     private val engine: GameEngine,
     private val nav: SceneContainer
 ) : Scene(), EscapeHandler {
+
+    // Pause-overlay seed COPY flash (~1.2s @ 60fps). Set by copySeedFromPause(), counted down in
+    // the updater. The pause overlay isn't focus-navigable (it's [P]/[Q] key-driven), so COPY uses
+    // the [C] hotkey (routed from main.kt) rather than a focus caret.
+    private var pauseCopyFlash = 0
+
+    /** Copy the current (mock) seed to the clipboard from the pause overlay + trigger the COPIED flash. */
+    fun copySeedFromPause() {
+        if (engine.gameState.value != GameState.PAUSED) return
+        Clipboard.copy(SeedField.value)
+        pauseCopyFlash = 72
+    }
 
     // ESC / Android back while playing → open the settings (pause) menu.
     override suspend fun onEscape(): Boolean {
@@ -154,6 +167,14 @@ class GameScene(
         val overlayBtn3 = text("", 36.0, RGBA(255, 255, 255, 160), font = Fonts.content).position(80.0, 910.0)
         overlayHead.visible = false; overlaySub.visible = false
         overlayBtn1.visible = false; overlayBtn2.visible = false; overlayBtn3.visible = false
+
+        // round3: pause-only SEED line + COPY SEED control. [ C ] copies (routed from main.kt).
+        val seedLabel = text("SEED:", 36.0, RGBA(255, 255, 255, 160), font = Fonts.content).position(80.0, 1010.0)
+        val seedValue = text("", 36.0, Colors["#00E5FF"], font = Fonts.content).position(80.0 + seedLabel.width + 14.0, 1010.0)
+        val copySeedRect = solidRect(320.0, 72.0, RGBA(255, 255, 255, 20)).position(500.0, 992.0)
+        val copySeedLabel = text("[ C ]  COPY SEED", 36.0, Colors.WHITE, font = Fonts.content).position(520.0, 1008.0)
+        seedLabel.visible = false; seedValue.visible = false
+        copySeedRect.visible = false; copySeedLabel.visible = false
 
         overlayBtn1.onClick {
             when (engine.gameState.value) {
@@ -399,6 +420,12 @@ class GameScene(
                 pauseLabel.text = if (paused) "RESUME" else "PAUSE"; lastPaused = paused
             }
 
+            // Seed UI is shown only while paused.
+            val showSeed = state == GameState.PAUSED
+            seedLabel.visible = showSeed; seedValue.visible = showSeed
+            copySeedRect.visible = showSeed; copySeedLabel.visible = showSeed
+            if (!showSeed) pauseCopyFlash = 0
+
             // ── Overlay state ─────────────────────────────────────────────────
             when (state) {
                 GameState.PAUSED -> {
@@ -410,6 +437,15 @@ class GameScene(
                     overlayBtn3.text = "[ Q ]  Abandon mission"
                     overlayHead.visible = true; overlaySub.visible = false
                     overlayBtn1.visible = true; overlayBtn2.visible = true; overlayBtn3.visible = true
+                    seedValue.text = SeedField.value
+                    if (pauseCopyFlash > 0) {
+                        pauseCopyFlash--
+                        copySeedRect.color = RGBA(0, 255, 136, 40)
+                        copySeedLabel.text = "COPIED"; copySeedLabel.color = Colors["#00FF88"]
+                    } else {
+                        copySeedRect.color = RGBA(255, 255, 255, 20)
+                        copySeedLabel.text = "[ C ]  COPY SEED"; copySeedLabel.color = Colors.WHITE
+                    }
                 }
                 GameState.GAME_OVER -> {
                     overlayBg.colorMul = Colors.BLACK; overlayBg.alpha = 0.85
