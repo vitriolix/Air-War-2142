@@ -1,8 +1,15 @@
 [versions]
 korge = "6.0.0"
 kotlin = "2.0.21"
+# SPIKE (spike/compose-korge-interop): Compose Multiplatform host shell. 1.7.x is the line that
+# pairs with Kotlin 2.0.x (1.8+ requires Kotlin 2.1+). AGP in this build is 8.2.2 (pulled by KorGE),
+# well within CMP 1.7.x's supported range.
+compose = "1.7.3"
 
 [plugins]
 korge = { id = "com.soywiz.korge", version.ref = "korge" }
+# SPIKE: Compose-MP Gradle plugin (deps/accessors) + the Compose compiler plugin (versioned with Kotlin).
+composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 # Dokka (API docs) is applied version-less in composeApp — it's already on the build classpath
 # via KorGE, so it isn't declared here.
