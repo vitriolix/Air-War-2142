@@ -1,8 +1,39 @@
 plugins {
     alias(libs.plugins.korge)
+    // SPIKE (spike/compose-korge-interop): Compose-MP host shell applied alongside the KorGE plugin.
+    alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.composeCompiler)
     // No version: Dokka is already on the build classpath (pulled in transitively by KorGE),
     // so re-declaring a version errors ("already on the classpath with an unknown version").
     id("org.jetbrains.dokka")
+}
+
+// SPIKE: Compose dependencies for the Android host shell only (the rest of the targets keep the
+// pure-KorGE UI for now). Proves the Compose-MP + KorGE plugins coexist in one :composeApp module.
+kotlin {
+    sourceSets {
+        androidMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
+            implementation(compose.ui)
+            implementation("androidx.activity:activity-compose:1.9.3")
+        }
+        // SPIKE: probe whether Compose-MP UI compiles for the Wasm web target alongside KorGE.
+        wasmJsMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+        }
+    }
+}
+
+// SPIKE: Compose 1.7.x's Android artifacts require compileSdk 34+ (KorGE defaults to 33).
+// The top-level `android {}` accessor collides with Compose's extension, so configure AGP's
+// extension explicitly by its common supertype. In afterEvaluate so it wins over KorGE's setup.
+afterEvaluate {
+    extensions.configure<com.android.build.gradle.BaseExtension>("android") {
+        compileSdkVersion(34)
+    }
 }
 
 // API reference (Dokka — the Kotlin Javadoc). Output to the root build/api/ so the README
