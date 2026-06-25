@@ -12,8 +12,10 @@
         android:supportsRtl="true"
         android:windowSoftInputMode="adjustResize"
         android:theme="@style/Theme.AirWar2142">
+        <!-- SPIKE(compose-overlay): launch the Compose host (transparent HUD over the
+             KorGE game) instead of KorGE's generated MainActivity. Revert for normal play. -->
         <activity
-            android:name=".MainActivity"
+            android:name=".ComposeHostActivity"
             android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:exported="true">
