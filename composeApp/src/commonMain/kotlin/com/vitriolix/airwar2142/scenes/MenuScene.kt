@@ -70,7 +70,8 @@ class MenuScene(
             nav.changeTo { GameScene(engine, nav) }
         }
         val settingsAction: suspend () -> Unit = {
-            nav.changeTo { SettingsScene(engine, nav) }
+            // SPIKE(korge-ui-widgets): route to the widget-toolkit rebuild for comparison.
+            nav.changeTo { SettingsSceneUi(engine, nav) }
         }
         menuButtonView("START CAMPAIGN",    80.0, 640.0, startAction)
         menuButtonView("SETTINGS & INPUTS", 80.0, 760.0, settingsAction)
