@@ -30,8 +30,9 @@ serve_browser() {
   if [ "$HEADLESS" -eq 1 ]; then
     ok "Serving (headless, no browser opened) at $url"
   else
-    ok "Serving at $url — opening your browser…"
-    command -v open >/dev/null 2>&1 && open "$url" || warn "Open $url in a browser."
+    # The dev server opens the browser itself (webpack auto-open; see webpack.config.d).
+    # Don't also `open` here or interactive playWeb pops two windows.
+    ok "Serving at $url — the dev server is opening your browser…"
   fi
   info "Dev server left running. Stop it with: ./gradlew killServers"
 }
