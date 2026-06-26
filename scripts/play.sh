@@ -11,22 +11,28 @@ for a in "$@"; do [ "$a" = "--headless" ] && HEADLESS=1; done
 serve_browser() {
   local task="$1" label="$2" log="$3"
   info "Building & serving the $label app…"
+  # Headless = our Playwright capture path: tell the dev server not to auto-open the
+  # system default browser (it'd collide with Chrome for Testing). See webpack.config.d.
+  [ "$HEADLESS" -eq 1 ] && export AIR_WAR_2142_NO_OPEN=1
   $GRADLE "$task" --continuous > "$log" 2>&1 &
   echo $! > "${log%.log}.pid"
   info "Waiting for the dev server to compile…"
   local url=""
   for _ in $(seq 1 180); do
-    url="$(grep -oE 'http://localhost:[0-9]+' "$log" 2>/dev/null | head -1 || true)"
-    if grep -q "compiled" "$log" 2>/dev/null && [ -n "$url" ]; then break; fi
-    if grep -q "BUILD FAILED" "$log" 2>/dev/null; then tail -20 "$log"; fail "$label build failed (see $log)."; fi
+    # -a: the dev-server log carries ANSI/control bytes, so grep would otherwise print
+    # "Binary file … matches" and that string would end up used as the URL.
+    url="$(grep -aoE 'http://localhost:[0-9]+' "$log" 2>/dev/null | head -1 || true)"
+    if grep -aq "compiled" "$log" 2>/dev/null && [ -n "$url" ]; then break; fi
+    if grep -aq "BUILD FAILED" "$log" 2>/dev/null; then tail -20 "$log"; fail "$label build failed (see $log)."; fi
     sleep 1
   done
   [ -n "$url" ] || { tail -20 "$log"; fail "Dev server did not start (see $log)."; }
   if [ "$HEADLESS" -eq 1 ]; then
     ok "Serving (headless, no browser opened) at $url"
   else
-    ok "Serving at $url — opening your browser…"
-    command -v open >/dev/null 2>&1 && open "$url" || warn "Open $url in a browser."
+    # The dev server opens the browser itself (webpack auto-open; see webpack.config.d).
+    # Don't also `open` here or interactive playWeb pops two windows.
+    ok "Serving at $url — the dev server is opening your browser…"
   fi
   info "Dev server left running. Stop it with: ./gradlew killServers"
 }

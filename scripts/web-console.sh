@@ -29,6 +29,9 @@ if [ ! -d "$TOOL_DIR/node_modules/playwright" ]; then
 fi
 
 info "Starting $TARGET dev server…"
+# This is a Playwright-driven console/capture path, so stop the dev server auto-opening
+# the system default browser (it'd collide with our Chrome). See webpack.config.d.
+export AIR_WAR_2142_NO_OPEN=1
 $GRADLE "$RUN_TASK" --continuous > "$LOG" 2>&1 &
 SERVER_PID=$!
 cleanup() {
@@ -42,9 +45,11 @@ trap cleanup EXIT INT TERM
 info "Waiting for the dev server to compile…"
 URL=""
 for _ in $(seq 1 180); do
-  URL="$(grep -oE 'http://localhost:[0-9]+' "$LOG" 2>/dev/null | head -1 || true)"
-  if grep -q "compiled" "$LOG" 2>/dev/null && [ -n "$URL" ]; then break; fi
-  grep -q "BUILD FAILED" "$LOG" 2>/dev/null && { tail -20 "$LOG"; fail "Build failed (see $LOG)."; }
+  # -a: the dev-server log carries ANSI/control bytes, so grep would otherwise print
+  # "Binary file … matches" and that string would end up used as the URL.
+  URL="$(grep -aoE 'http://localhost:[0-9]+' "$LOG" 2>/dev/null | head -1 || true)"
+  if grep -aq "compiled" "$LOG" 2>/dev/null && [ -n "$URL" ]; then break; fi
+  grep -aq "BUILD FAILED" "$LOG" 2>/dev/null && { tail -20 "$LOG"; fail "Build failed (see $LOG)."; }
   sleep 1
 done
 [ -n "$URL" ] || { tail -20 "$LOG"; fail "Dev server did not start (see $LOG)."; }

@@ -56,7 +56,7 @@ tasks.register("testAndroid") { group = gameGroup; description = "Run Android un
 tasks.register("testAll")     { group = gameGroup; description = "Run all tests.";          dependsOn(":composeApp:allTests") }
 
 // --- Housekeeping ----------------------------------------------------------------
-tasks.register<Exec>("webConsole")  { description = "Boot the web build and stream its browser console + errors to the terminal."; runScript("scripts/web-console.sh") }
+tasks.register<WebConsole>("webConsole") { group = gameGroup; description = "Boot the web build and stream its browser console + errors to the terminal. --headed for a visible Chrome for Testing window; --target=wasm for the Wasm build." }
 // Native custom-task helpers (buildSrc) — logic lives in the Gradle task context, not bash.
 tasks.register<RenderDocs>("renderDocs") { group = gameGroup; description = "Render Markdown docs (README + docs/) to HTML and open the index. --file=<path> for one." }
 tasks.register<PrOpen>("openPr")         { group = gameGroup; description = "Open a GitHub PR's page in the browser. --pr=<number|branch> (default: current branch)." }
