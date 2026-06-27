@@ -135,10 +135,14 @@ class GameScene(
         val dbgFontSize = 20.0; val dbgRowH = 24.0
         val dbgY = ch - (dbgLabels.size * dbgRowH + 14.0) - 70.0
         val debugContainer = container {
-            solidRect(340.0, dbgLabels.size * dbgRowH + 14.0, RGBA(0, 0, 0, 165))
+            solidRect(340.0, dbgLabels.size * dbgRowH + 14.0 + dbgRowH, RGBA(0, 0, 0, 165))
             dbgLabels.forEachIndexed { i, lbl ->
                 text(lbl.padEnd(7), dbgFontSize, Colors["#00E5FF"]).position(6.0, 7.0 + i * dbgRowH)
             }
+            // Discoverability for the stage-level jump-to-screen picker (see main.kt):
+            // available from any scene while this debug overlay is up.
+            text("[ J ]  jump to screen", dbgFontSize * 0.85, RGBA(255, 204, 0, 220))
+                .position(6.0, 9.0 + dbgLabels.size * dbgRowH)
         }.position(8.0, dbgY)
         val dbgValues = dbgLabels.indices.map { i ->
             text("", dbgFontSize, Colors.WHITE).also { debugContainer.addChild(it) }

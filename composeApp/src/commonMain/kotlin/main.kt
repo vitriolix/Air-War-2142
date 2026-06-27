@@ -1,13 +1,20 @@
 import com.vitriolix.airwar2142.CANVAS_HEIGHT
 import korlibs.event.Key
 import korlibs.image.color.Colors
+import korlibs.image.color.RGBA
 import korlibs.korge.Korge
 import korlibs.korge.input.keys
 import korlibs.korge.scene.SceneContainer
+import korlibs.korge.view.container
+import korlibs.korge.view.position
+import korlibs.korge.view.solidRect
+import korlibs.korge.view.text
 import com.vitriolix.airwar2142.audio.NoOpSoundPlayer
 import com.vitriolix.airwar2142.input.NoOpSensorInput
 import com.vitriolix.airwar2142.logic.GameEngine
 import com.vitriolix.airwar2142.logic.GameState
+import com.vitriolix.airwar2142.render.Fonts
+import com.vitriolix.airwar2142.scenes.ControllerPrefsScene
 import com.vitriolix.airwar2142.scenes.EscapeHandler
 import com.vitriolix.airwar2142.scenes.GameScene
 import com.vitriolix.airwar2142.scenes.KeyboardNavigable
@@ -28,6 +35,37 @@ suspend fun main() = Korge(
     val sc = SceneContainer(views = views)
     addChild(sc)
 
+    // ── Debug "jump to screen" picker (dev tool) ────────────────────────────────
+    // A stage-level overlay (above all scenes) so it works from any scene. Gated on the
+    // debug overlay (`~`): press J to toggle this picker, then a per-screen key to jump
+    // straight there — including Game Over / Victory / Paused, which normal play can only
+    // reach by dying / killing a boss / pausing. Lets tests + captures land on any screen
+    // without playing to it. The jump keys (M/H/U/S/K/O/V) are chosen to not collide with
+    // any in-game/menu bind, and only act while this picker is open.
+    Fonts.load()
+    val jumpOverlay = container {
+        visible = false
+        solidRect(620.0, 660.0, RGBA(0, 0, 0, 225)).position(60.0, 200.0)
+        listOf(
+            "JUMP TO SCREEN", "",
+            "[ M ]  Menu",
+            "[ H ]  HUD / in-game",
+            "[ U ]  Paused",
+            "[ S ]  Settings",
+            "[ K ]  Controller",
+            "[ O ]  Game Over",
+            "[ V ]  Victory",
+            "",
+            "[ J ]  close"
+        ).forEachIndexed { i, s ->
+            text(s, if (i == 0) 44.0 else 34.0, Colors["#00E5FF"], font = Fonts.content)
+                .position(100.0, 232.0 + i * 52.0)
+        }
+    }
+    fun setJump(v: Boolean) { jumpOverlay.visible = v && engine.showDebugOverlay }
+    // True only when a screen-jump key should act: debug on AND the picker open.
+    fun jumpArmed() = engine.showDebugOverlay && jumpOverlay.visible
+
     // Current scene's focus controller, if it supports keyboard/gamepad navigation.
     fun navFocus() = (sc.currentScene as? KeyboardNavigable)?.focusController
 
@@ -43,6 +81,19 @@ suspend fun main() = Korge(
         down(Key.ESCAPE) { (sc.currentScene as? EscapeHandler)?.onEscape() }
         down(Key.BACK)   { (sc.currentScene as? EscapeHandler)?.onEscape() }
         down(Key.P) { engine.togglePause() }
+        // ── Debug jump-to-screen picker ─────────────────────────────────────────
+        // J toggles the picker (only while the debug overlay is up). Each screen key
+        // acts only while the picker is open (jumpArmed()), so it can't fire in normal
+        // play. Forced states (Paused/Game Over/Victory) use debugForceState after
+        // startGame() sets up a live world behind the overlay.
+        down(Key.J) { if (engine.showDebugOverlay) setJump(!jumpOverlay.visible) }
+        down(Key.M) { if (jumpArmed()) { setJump(false); engine.returnToMenu(); sc.changeTo { MenuScene(engine, sc) } } }
+        down(Key.H) { if (jumpArmed()) { setJump(false); engine.startGame(); sc.changeTo { GameScene(engine, sc) } } }
+        down(Key.U) { if (jumpArmed()) { setJump(false); engine.startGame(); engine.debugForceState(GameState.PAUSED); sc.changeTo { GameScene(engine, sc) } } }
+        down(Key.S) { if (jumpArmed()) { setJump(false); sc.changeTo { SettingsScene(engine, sc) } } }
+        down(Key.K) { if (jumpArmed()) { setJump(false); sc.changeTo { ControllerPrefsScene(engine, sc) } } }
+        down(Key.O) { if (jumpArmed()) { setJump(false); engine.startGame(); engine.debugForceState(GameState.GAME_OVER); sc.changeTo { GameScene(engine, sc) } } }
+        down(Key.V) { if (jumpArmed()) { setJump(false); engine.startGame(); engine.debugForceState(GameState.LEVEL_COMPLETE); sc.changeTo { GameScene(engine, sc) } } }
         down(Key.Q) {
             val st = engine.gameState.value
             if (st == GameState.GAME_OVER || st == GameState.PAUSED || st == GameState.LEVEL_COMPLETE) {
@@ -98,6 +149,7 @@ suspend fun main() = Korge(
             if (ev.key == Key.BACKQUOTE || ev.key == Key.GRAVE || ev.keyCode == 192 ||
                 ev.character == '`' || ev.character == '~') {
                 engine.showDebugOverlay = !engine.showDebugOverlay
+                if (!engine.showDebugOverlay) setJump(false)  // hide the jump picker with the overlay
             }
         }
     }
