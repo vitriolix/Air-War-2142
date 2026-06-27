@@ -263,6 +263,11 @@ class GameEngine(
         sensorInput.stopListening()
     }
 
+    /** Dev tool: force an end/pause state directly (used by the debug "jump to screen"
+     *  picker so tests/captures can land on Game Over / Victory / Paused without playing
+     *  there). Not reachable in normal play — only via the debug overlay. */
+    fun debugForceState(s: GameState) { _gameState.value = s }
+
     // Main 60FPS tick logic
     fun tick() {
         if (_gameState.value != GameState.PLAYING) return
