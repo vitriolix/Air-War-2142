@@ -43,7 +43,7 @@ Newest entries on top. Each thread/follow-up carries a **Status**:
   persistence lands with gamepad input."*
 
 **Has any work been done? No.** Git history shows only the controller-prefs UI port
-(PRs #24/#25). Acknowledged as future in design notes + TASKS #27 follow-ups.
+(PRs #24/#25). Acknowledged as future in design notes + task-27 follow-ups.
 
 **Cross-platform storage options:**
 - **KorGE `Views.storage` (`NativeStorage`)** — natural fit, already on the classpath (no new
@@ -133,7 +133,7 @@ debug MODE line shows `controlMode.value.name`. Gamepad isn't implemented at all
   need precedence or "only one positional method at a time", or a defined blend.
 - Touch + keyboard simultaneously → jitter/fighting.
 - Auto-fire semantics (TILT/TOUCH currently auto-fire) need rethinking under multi-select.
-- Determinism/replay (#19): every live input source per tick must be recorded.
+- Determinism/replay (task-19): every live input source per tick must be recorded.
 - Perf: negligible.
 
 The **display** is cheap but only meaningful once multiple methods are truly active, which
@@ -154,7 +154,7 @@ control mode, colorway, motion knobs); gamepad bindings plug in later. → its o
 
 > "could we split that work out from the Seed work? The Seed work is a long haul and this is a short haul."
 
-Yes. The `PrefStore` is generic K/V infra; the Seed/worldgen work (#25/#26) merely becomes a
+Yes. The `PrefStore` is generic K/V infra; the Seed/worldgen work (task-25/task-26) merely becomes a
 *consumer* (store `seed + genVersion` as a couple of keys). No dependency the other way.
 Persistence is a short, self-contained haul; Seed is a long haul. Decouple — persistence plan
 stands alone, Seed consumes it later.

@@ -2,8 +2,8 @@
 
 **Branch:** `plan/prefs-persistence` · **Status:** plan only (no implementation) · **Date:** 2026-06-27
 
-Derived from [Investigations.md](Investigations.md) #001 (threads 1, F1, F3, F4). This is a **short, self-contained
-haul**, intentionally **decoupled from the Seed/worldgen work** (#25/#26) — Seed merely becomes a
+Derived from [Investigations.md](Investigations.md) investigation-001 (threads 1, F1, F3, F4). This is a **short, self-contained
+haul**, intentionally **decoupled from the Seed/worldgen work** (task-25/task-26) — Seed merely becomes a
 consumer of this store later; there is no dependency the other way.
 
 > Plain-language doc (no `docs/NNNN` managed-tasks block) so it doesn't participate in the
@@ -75,8 +75,8 @@ A thin typed wrapper over `IStorage` so call sites never touch raw string keys:
    load-at-init + save-on-change. Verify across a real restart (JVM **and** web static build).
 3. **Move ControllerPrefs settings onto the engine + persist** (inert until gamepad wiring, F1).
 4. **Persist dev/motion knobs** under `dev.*`, plus a **"reset to defaults"** in the MOTION panel
-   (this also closes the TASKS #27 follow-up). Optional / gated.
-5. Later: **Seed** (#25/#26) consumes `user.lastSeed` + `genVersion`. No dependency back onto persistence.
+   (this also closes the task-27 follow-up). Optional / gated.
+5. Later: **Seed** (task-25/task-26) consumes `user.lastSeed` + `genVersion`. No dependency back onto persistence.
 
 ## Risks / open decisions
 
@@ -85,7 +85,7 @@ A thin typed wrapper over `IStorage` so call sites never touch raw string keys:
 - **Web storage availability** — `localStorage` can be disabled/full (private mode); `NativeStorage`
   is best-effort and swallows errors. Treat persistence as best-effort, never gate startup on it.
 - **Android/iOS `realSettingsFolder`** — verify the path resolves per platform when those targets land.
-- **Determinism** — a persisted seed feeds worldgen; store the `(genVersion, seed)` pair (ties #25/#26).
+- **Determinism** — a persisted seed feeds worldgen; store the `(genVersion, seed)` pair (ties task-25/task-26).
 
 ## Out of scope
 
