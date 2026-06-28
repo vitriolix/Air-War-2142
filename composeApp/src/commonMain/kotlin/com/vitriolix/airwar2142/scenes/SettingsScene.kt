@@ -11,6 +11,11 @@ import com.vitriolix.airwar2142.logic.ControlMode
 import com.vitriolix.airwar2142.logic.GameEngine
 import com.vitriolix.airwar2142.render.Fonts
 
+// Cross-platform text vertical centering: use font size instead of text.height (which differs between JVM/web).
+// Cap-height ratio ~0.72 means the ascender peaks ~72% of the em-square; centering uses em-square center.
+private fun centerTextVertically(containerY: Double, containerHeight: Double, fontSize: Double): Double =
+    containerY + containerHeight / 2.0 - fontSize * 0.36
+
 class SettingsScene(
     private val engine: GameEngine,
     private val nav: SceneContainer,
@@ -53,7 +58,8 @@ class SettingsScene(
             val selected = engine.controlMode.value == mode
             val bgColor = if (selected) RGBA(0, 229, 255, 40) else RGBA(255, 255, 255, 20)
             solidRect(800.0, 80.0, bgColor).position(100.0, cy)
-            text(label, 36.0, if (selected) Colors["#00E5FF"] else Colors.WHITE, font = Fonts.content).position(116.0, cy + 18.0)
+            text(label, 36.0, if (selected) Colors["#00E5FF"] else Colors.WHITE, font = Fonts.content)
+                .position(116.0, centerTextVertically(cy, 80.0, 36.0))
             val act: suspend () -> Unit = { engine.setControlMode(mode); rebuild(i)() }
             solidRect(800.0, 80.0, RGBA(0, 0, 0, 1)).position(100.0, cy)
                 .onClickSuspend(views.coroutineContext) { act() }
@@ -69,7 +75,8 @@ class SettingsScene(
             engine.sensitivity = (engine.sensitivity - 0.1f).coerceAtLeast(0.5f); rebuild(3)()
         }
         solidRect(80.0, 60.0, Colors["#FF9900"]).position(100.0, 710.0)
-        text("  -  ", 36.0, Colors.WHITE, font = Fonts.content).position(100.0, 718.0)
+        text("  -  ", 36.0, Colors.WHITE, font = Fonts.content)
+            .position(100.0, centerTextVertically(710.0, 60.0, 36.0))
         solidRect(80.0, 60.0, RGBA(0, 0, 0, 1)).position(100.0, 710.0)
             .onClickSuspend(views.coroutineContext) { decAct() }
         fc.add(caretX, 718.0, decAct)
@@ -79,7 +86,8 @@ class SettingsScene(
             engine.sensitivity = (engine.sensitivity + 0.1f).coerceAtMost(2.5f); rebuild(4)()
         }
         solidRect(80.0, 60.0, Colors["#FF9900"]).position(210.0, 710.0)
-        text("  +  ", 36.0, Colors.WHITE, font = Fonts.content).position(210.0, 718.0)
+        text("  +  ", 36.0, Colors.WHITE, font = Fonts.content)
+            .position(210.0, centerTextVertically(710.0, 60.0, 36.0))
         solidRect(80.0, 60.0, RGBA(0, 0, 0, 1)).position(210.0, 710.0)
             .onClickSuspend(views.coroutineContext) { incAct() }
         fc.add(168.0, 718.0, incAct)   // caret left of the + button
@@ -88,7 +96,8 @@ class SettingsScene(
         val sfxColor = if (engine.sfxEnabled) Colors["#00FF88"] else Colors["#FF3333"]
         val sfxAct: suspend () -> Unit = { engine.sfxEnabled = !engine.sfxEnabled; rebuild(5)() }
         solidRect(280.0, 70.0, sfxColor.withA(60)).position(100.0, 840.0)
-        text(if (engine.sfxEnabled) "SFX: ON" else "SFX: OFF", 36.0, sfxColor, font = Fonts.content).position(120.0, 852.0)
+        text(if (engine.sfxEnabled) "SFX: ON" else "SFX: OFF", 36.0, sfxColor, font = Fonts.content)
+            .position(120.0, centerTextVertically(840.0, 70.0, 36.0))
         solidRect(280.0, 70.0, RGBA(0, 0, 0, 1)).position(100.0, 840.0)
             .onClickSuspend(views.coroutineContext) { sfxAct() }
         fc.add(caretX, 852.0, sfxAct)
@@ -97,7 +106,8 @@ class SettingsScene(
         val dbgColor = if (engine.showDebugOverlay) Colors["#00FF88"] else Colors["#999999"]
         val dbgAct: suspend () -> Unit = { engine.showDebugOverlay = !engine.showDebugOverlay; rebuild(6)() }
         solidRect(440.0, 70.0, dbgColor.withA(60)).position(100.0, 960.0)
-        text(if (engine.showDebugOverlay) "DEBUG OVERLAY: ON" else "DEBUG OVERLAY: OFF", 36.0, dbgColor, font = Fonts.content).position(120.0, 972.0)
+        text(if (engine.showDebugOverlay) "DEBUG OVERLAY: ON" else "DEBUG OVERLAY: OFF", 36.0, dbgColor, font = Fonts.content)
+            .position(120.0, centerTextVertically(960.0, 70.0, 36.0))
         solidRect(440.0, 70.0, RGBA(0, 0, 0, 1)).position(100.0, 960.0)
             .onClickSuspend(views.coroutineContext) { dbgAct() }
         fc.add(caretX, 972.0, dbgAct)
@@ -105,7 +115,8 @@ class SettingsScene(
         // CONTROLLER navigation row — focus index 7
         val ctrlAct: suspend () -> Unit = { nav.changeTo { ControllerPrefsScene(engine, nav, fromGame) } }
         solidRect(800.0, 80.0, RGBA(255, 255, 255, 20)).position(100.0, 1090.0)
-        text("CONTROLLER", 36.0, Colors.WHITE, font = Fonts.content).position(116.0, 1108.0)
+        text("CONTROLLER", 36.0, Colors.WHITE, font = Fonts.content)
+            .position(116.0, centerTextVertically(1090.0, 80.0, 36.0))
         solidRect(800.0, 80.0, RGBA(0, 0, 0, 1)).position(100.0, 1090.0)
             .onClickSuspend(views.coroutineContext) { ctrlAct() }
         fc.add(caretX, 1108.0, ctrlAct)
@@ -114,7 +125,8 @@ class SettingsScene(
         val backY = CANVAS_HEIGHT - 200.0
         val exitLabel = if (fromGame) "RESUME GAME" else "SAVE & EXIT"
         solidRect(380.0, 80.0, RGBA(255, 255, 255, 20)).position(100.0, backY)
-        text(exitLabel, 41.0, Colors.WHITE, font = Fonts.content).position(130.0, backY + 12.0)
+        text(exitLabel, 41.0, Colors.WHITE, font = Fonts.content)
+            .position(130.0, centerTextVertically(backY, 80.0, 41.0))
         val doExit: suspend () -> Unit = if (fromGame) {
             { engine.togglePause(); nav.changeTo { GameScene(engine, nav) } }
         } else {

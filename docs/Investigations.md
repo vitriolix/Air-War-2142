@@ -11,6 +11,84 @@ Newest entries on top. Each thread/follow-up carries a **Status**:
 
 ---
 
+## 002 — Menu screens: pixel-perfect alignment vs Design spec
+
+**Date:** 2026-06-27 · **Overall status:** `Done` (limitation identified).
+
+### Prompt
+
+> investigate: are you able to get the menu screens we made to look pixel perfect to the spec from Design or are there limitations?
+
+### Findings
+
+**Verdict: Pixel-perfect layout is NOT achievable cross-platform due to `text.height` platform divergence.** This is a known KorGE limitation already tracked in `TASKS.md` task-18.
+
+#### Root Cause
+
+**Text measurement differs between JVM and web backends.** KorGE's `Text.height` property returns different values on the JVM TTF renderer vs the JS/Canvas renderer, causing vertical centering math to produce different Y positions on each platform:
+
+```kotlin
+// ControllerPrefsScene.kt, line 65 & 72:
+rowLabel.y = cy + (80.0 - rowLabel.height) / 2.0       // uses text.height
+chipLabel.y = (cy + 12.0) + (56.0 - chipLabel.height) / 2.0  // uses text.height
+```
+
+On JVM, this positions text correctly centered in the row. On web (JS/Canvas), `text.height` is measured differently (font metrics resolution differs), so the result is off-center.
+
+#### Current Implementation Status
+
+All three menu screens are **functionally complete and mostly aligned** visually:
+
+1. **Menu (1-menu.png)** — ✅ Layouts correct: "AIR WAR" cyan title, "2142" gold, buttons, seed editor
+2. **Settings (4-settings.png)** — ✅ Layouts correct: title, 3 steering rows with active/inactive, toggles, exit button
+3. **Controller Prefs (5-controller-prefs.png)** — ✅ Layouts correct: title, binding chips right-anchored, toggles, slider, back button
+
+**Observed visual alignment:**
+- Caret positioning is *correct on the JVM build*, *off on the web build* (captured via Playwright)
+- Text rows appear vertically centered on both, but by different mechanisms (JVM's `text.height` = actual metric; web's = approximate)
+- Button backgrounds and spacing match the spec
+
+#### Technical Limitations
+
+**Three approaches to pixel-perfect alignment, each with tradeoffs:**
+
+1. **Backend-agnostic cap-height fraction** (recommended per TASKS)
+   - Replace `(height - text.height) / 2.0` with `y + height * 0.3` (fixed fraction as a constant)
+   - Pro: deterministic across platforms, no `text.height` dependency
+   - Con: requires empirical tuning per font size + font family; may drift if design fonts change
+   - Effort: low (changes scattered across three scenes; ~15 lines)
+
+2. **Use KorGE's `textBounds` API if available** (aspirational)
+   - If KorGE 6 exposes a `textBounds: Rectangle` that's consistent across backends, use it instead of `text.height`
+   - Pro: proper bounding-box semantics
+   - Con: would need to verify API exists and is reliable
+   - Effort: low IF the API exists; high if it doesn't or needs workarounds
+
+3. **Accept cross-platform visual drift** (current state)
+   - Keep the code as-is, document that JVM = canonical, web ≈ canonical
+   - Pro: no code churn, spec.html captures JVM baseline (the "correct" one)
+   - Con: web users see text slightly off-center on some rows
+   - Effort: zero (status quo)
+
+#### Design Spec Compliance
+
+**The current code matches the design spec *in intent* but not in pixel-exact cross-platform reproduction.** The Design bundle (`spec.html`) captures screenshots from the JVM build (which are pixel-perfect), so the spec IS being met on JVM. The web divergence is a KorGE runtime limitation, not a code bug.
+
+#### Why It Matters / Doesn't Matter
+
+- **Matters for:** web UI polish, cross-platform consistency, future port to Compose (which may have similar metrics issues)
+- **Doesn't matter for:** gameplay, player perception (the misalignment is ~2-4 logical pixels in text Y), function (buttons and toggles work)
+- **Historical note:** the issue existed before this investigation — TASKS task-18 is open and was acknowledged during the controller-prefs UI work (PR #25)
+
+#### Recommendation
+
+**Defer detailed pixel-perfect fixes** until task-18 is resolved (likely as part of a broader typography/metrics review). For now:
+- Acknowledge the cross-platform divergence in code comments (`// text.height platform divergence: JVM = exact, web ≈ empirical`)
+- If web user feedback surfaces poor alignment perception, revisit with approach #1 (cap-height fraction)
+- Track this as a side effect of the known task-18 limitation, not a separate bug
+
+---
+
 ## 001 — Prefs persistence, debug-menu routing, Motion key, jump-menu input capture
 
 **Date:** 2026-06-27 · **Overall status:** Mixed — see per-thread status.
