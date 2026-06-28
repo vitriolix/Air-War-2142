@@ -2,7 +2,7 @@
 
 **Branch:** `plan/prefs-persistence` · **Status:** plan only (no implementation) · **Date:** 2026-06-27
 
-Derived from `Investigations.md` #001 (threads 1, F1, F3, F4). This is a **short, self-contained
+Derived from [Investigations.md](Investigations.md) #001 (threads 1, F1, F3, F4). This is a **short, self-contained
 haul**, intentionally **decoupled from the Seed/worldgen work** (#25/#26) — Seed merely becomes a
 consumer of this store later; there is no dependency the other way.
 
@@ -31,7 +31,7 @@ Use KorGE's built-in **`Views.storage: NativeStorage`** (`korlibs.korge.service.
 - Backends per platform: **JVM** = `java.util.Properties` file (`game.jvm.storage` in
   `realSettingsFolder`), **web** = `localStorage`, **Android** = file.
 - Ships with `StorageKey<T>` typed delegates (`itemBool/itemInt/itemDouble/itemString`) and an
-  `InmemoryStorage` (for tests).
+  `InmemoryStorage` for tests. *(`InmemoryStorage` is KorGE's actual class name — lowercase `m`, sic — not a typo; `InMemoryStorage` won't resolve.)*
 
 Rejected: **Fleks** (it's an ECS framework, not storage); raw `korlibs.io` Vfs/localStorage
 (`NativeStorage` already wraps it cleanly).
