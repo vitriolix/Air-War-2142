@@ -18,9 +18,10 @@ import com.vitriolix.airwar2142.platform.Clipboard
 import com.vitriolix.airwar2142.render.Fonts
 
 // Cross-platform text vertical centering: use font size instead of text.height (which differs between JVM/web).
-// Cap-height ratio ~0.72 means the ascender peaks ~72% of the em-square; centering uses em-square center.
+// Formula: (containerHeight - fontSize) / 2, which is equivalent to the original (height - text.height) / 2
+// when text.height ≈ fontSize (typical for most fonts).
 private fun centerTextVertically(containerY: Double, containerHeight: Double, fontSize: Double): Double =
-    containerY + containerHeight / 2.0 - fontSize * 0.36
+    containerY + (containerHeight - fontSize) / 2.0
 
 class MenuScene(
     private val engine: GameEngine,
