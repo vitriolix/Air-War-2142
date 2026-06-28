@@ -5,12 +5,14 @@ import korlibs.image.color.RGBA
 import korlibs.korge.Korge
 import korlibs.korge.input.keys
 import korlibs.korge.scene.SceneContainer
+import korlibs.korge.view.addUpdater
 import korlibs.korge.view.container
 import korlibs.korge.view.position
 import korlibs.korge.view.solidRect
 import korlibs.korge.view.text
 import com.vitriolix.airwar2142.audio.NoOpSoundPlayer
 import com.vitriolix.airwar2142.input.NoOpSensorInput
+import com.vitriolix.airwar2142.logic.DebugSubMenu
 import com.vitriolix.airwar2142.logic.GameEngine
 import com.vitriolix.airwar2142.logic.GameState
 import com.vitriolix.airwar2142.render.Fonts
@@ -20,6 +22,7 @@ import com.vitriolix.airwar2142.scenes.GameScene
 import com.vitriolix.airwar2142.scenes.KeyboardNavigable
 import com.vitriolix.airwar2142.scenes.MenuScene
 import com.vitriolix.airwar2142.scenes.SettingsScene
+import com.vitriolix.airwar2142.scenes.onSubMenu
 import com.vitriolix.airwar2142.scenes.TextInputTarget
 
 suspend fun main() = Korge(
@@ -40,31 +43,38 @@ suspend fun main() = Korge(
     // debug overlay (`~`): press J to toggle this picker, then a per-screen key to jump
     // straight there — including Game Over / Victory / Paused, which normal play can only
     // reach by dying / killing a boss / pausing. Lets tests + captures land on any screen
-    // without playing to it. The jump keys (M/H/U/S/K/O/V) are chosen to not collide with
-    // any in-game/menu bind, and only act while this picker is open.
+    // without playing to it. Each jump key only acts while this picker is up (onSubMenu),
+    // and conflicting global binds (P=pause, C=copy-seed, G=motion) yield to it while open.
+    // Docked bottom-left, sharing the base readout's footprint (x=8, bottom edge ch-46).
     Fonts.load()
+    val jumpItems = listOf(
+        "JUMP TO SCREEN", "",
+        "[ M ]  Menu",
+        "[ H ]  HUD / in-game",
+        "[ P ]  Paused",
+        "[ S ]  Settings",
+        "[ C ]  Controller",
+        "[ G ]  Game Over",
+        "[ V ]  Victory",
+        "",
+        "[ J ] / [ ESC ]  back"
+    )
+    val jumpRowH = 40.0; val jumpPadX = 20.0; val jumpPadTop = 16.0
+    val jumpPanelW = 396.0
+    val jumpPanelH = jumpPadTop * 2 + jumpItems.size * jumpRowH
     val jumpOverlay = container {
         visible = false
-        solidRect(620.0, 660.0, RGBA(0, 0, 0, 225)).position(60.0, 200.0)
-        listOf(
-            "JUMP TO SCREEN", "",
-            "[ M ]  Menu",
-            "[ H ]  HUD / in-game",
-            "[ U ]  Paused",
-            "[ S ]  Settings",
-            "[ K ]  Controller",
-            "[ O ]  Game Over",
-            "[ V ]  Victory",
-            "",
-            "[ J ]  close"
-        ).forEachIndexed { i, s ->
-            text(s, if (i == 0) 44.0 else 34.0, Colors["#00E5FF"], font = Fonts.content)
-                .position(100.0, 232.0 + i * 52.0)
+        solidRect(jumpPanelW, jumpPanelH, RGBA(0, 0, 0, 225))
+        jumpItems.forEachIndexed { i, s ->
+            text(s, if (i == 0) 30.0 else 26.0, Colors["#00E5FF"], font = Fonts.content)
+                .position(jumpPadX, jumpPadTop + i * jumpRowH)
         }
-    }
-    fun setJump(v: Boolean) { jumpOverlay.visible = v && engine.showDebugOverlay }
-    // True only when a screen-jump key should act: debug on AND the picker open.
-    fun jumpArmed() = engine.showDebugOverlay && jumpOverlay.visible
+    }.position(8.0, CANVAS_HEIGHT.toDouble() - 46.0 - jumpPanelH)
+    // The jump picker is the JUMP debug sub-menu. Visibility of every debug surface is
+    // derived from the single source of truth (engine.debugSubMenu) by per-frame updaters
+    // (the stage one below + GameScene's), so transitions only ever set state — they never
+    // poke individual overlays (which is what let cross-file menus drift out of sync).
+    fun gotoMenu(m: DebugSubMenu) { if (engine.showDebugOverlay) engine.debugSubMenu = m }
 
     // Current scene's focus controller, if it supports keyboard/gamepad navigation.
     fun navFocus() = (sc.currentScene as? KeyboardNavigable)?.focusController
@@ -76,24 +86,41 @@ suspend fun main() = Korge(
         down(Key.R) {
             if (engine.gameState.value == GameState.PLAYING) engine.triggerRoll()
         }
-        // ESC / Android back → let the current scene decide: GameScene opens settings,
-        // SettingsScene closes itself (toggle). Routed so a gamepad B button can reuse it.
-        down(Key.ESCAPE) { (sc.currentScene as? EscapeHandler)?.onEscape() }
-        down(Key.BACK)   { (sc.currentScene as? EscapeHandler)?.onEscape() }
-        down(Key.P) { engine.togglePause() }
+        // ESC / Android back → if a debug sub-menu (Jump/Motion) is open, back OUT to the
+        // base debug state first; otherwise let the current scene decide: GameScene opens
+        // settings, SettingsScene closes itself (toggle). Routed so a gamepad B can reuse it.
+        suspend fun escapeAction() {
+            if (engine.showDebugOverlay && engine.debugSubMenu != DebugSubMenu.NONE) gotoMenu(DebugSubMenu.NONE)
+            else (sc.currentScene as? EscapeHandler)?.onEscape()
+        }
+        down(Key.ESCAPE) { escapeAction() }
+        down(Key.BACK)   { escapeAction() }
+        down(Key.P) { if (engine.debugSubMenu != DebugSubMenu.JUMP) engine.togglePause() }  // yields 'P' to the JUMP picker
         // ── Debug jump-to-screen picker ─────────────────────────────────────────
         // J toggles the picker (only while the debug overlay is up). Each screen key
         // acts only while the picker is open (jumpArmed()), so it can't fire in normal
         // play. Forced states (Paused/Game Over/Victory) use debugForceState after
         // startGame() sets up a live world behind the overlay.
-        down(Key.J) { if (engine.showDebugOverlay) setJump(!jumpOverlay.visible) }
-        down(Key.M) { if (jumpArmed()) { setJump(false); engine.returnToMenu(); sc.changeTo { MenuScene(engine, sc) } } }
-        down(Key.H) { if (jumpArmed()) { setJump(false); engine.startGame(); sc.changeTo { GameScene(engine, sc) } } }
-        down(Key.U) { if (jumpArmed()) { setJump(false); engine.startGame(); engine.debugForceState(GameState.PAUSED); sc.changeTo { GameScene(engine, sc) } } }
-        down(Key.S) { if (jumpArmed()) { setJump(false); sc.changeTo { SettingsScene(engine, sc) } } }
-        down(Key.K) { if (jumpArmed()) { setJump(false); sc.changeTo { ControllerPrefsScene(engine, sc) } } }
-        down(Key.O) { if (jumpArmed()) { setJump(false); engine.startGame(); engine.debugForceState(GameState.GAME_OVER); sc.changeTo { GameScene(engine, sc) } } }
-        down(Key.V) { if (jumpArmed()) { setJump(false); engine.startGame(); engine.debugForceState(GameState.LEVEL_COMPLETE); sc.changeTo { GameScene(engine, sc) } } }
+        // J toggles the JUMP picker — but yields `j` to the MOTION panel (row-down) while
+        // that menu owns it. Both handlers fire (same stage), so this guard is how the key
+        // is effectively "unbound" here when MOTION is active.
+        down(Key.J) {
+            when (engine.debugSubMenu) {
+                DebugSubMenu.MOTION -> {}                          // 'j' belongs to the motion panel
+                DebugSubMenu.JUMP   -> gotoMenu(DebugSubMenu.NONE) // close → back to BASE
+                DebugSubMenu.NONE   -> gotoMenu(DebugSubMenu.JUMP) // open (no-op if debug off)
+            }
+        }
+        // Screen-jump keys — only live while the JUMP sub-menu is the active debug menu
+        // (uniform onSubMenu gating). Each backs out to BASE then jumps; the debug overlay
+        // stays on, so the destination scene shows its base readout.
+        onSubMenu(engine, DebugSubMenu.JUMP, Key.M) { gotoMenu(DebugSubMenu.NONE); engine.returnToMenu(); sc.changeTo { MenuScene(engine, sc) } }
+        onSubMenu(engine, DebugSubMenu.JUMP, Key.H) { gotoMenu(DebugSubMenu.NONE); engine.startGame(); sc.changeTo { GameScene(engine, sc) } }
+        onSubMenu(engine, DebugSubMenu.JUMP, Key.P) { gotoMenu(DebugSubMenu.NONE); engine.startGame(); engine.debugForceState(GameState.PAUSED); sc.changeTo { GameScene(engine, sc) } }
+        onSubMenu(engine, DebugSubMenu.JUMP, Key.S) { gotoMenu(DebugSubMenu.NONE); sc.changeTo { SettingsScene(engine, sc) } }
+        onSubMenu(engine, DebugSubMenu.JUMP, Key.C) { gotoMenu(DebugSubMenu.NONE); sc.changeTo { ControllerPrefsScene(engine, sc) } }
+        onSubMenu(engine, DebugSubMenu.JUMP, Key.G) { gotoMenu(DebugSubMenu.NONE); engine.startGame(); engine.debugForceState(GameState.GAME_OVER); sc.changeTo { GameScene(engine, sc) } }
+        onSubMenu(engine, DebugSubMenu.JUMP, Key.V) { gotoMenu(DebugSubMenu.NONE); engine.startGame(); engine.debugForceState(GameState.LEVEL_COMPLETE); sc.changeTo { GameScene(engine, sc) } }
         down(Key.Q) {
             val st = engine.gameState.value
             if (st == GameState.GAME_OVER || st == GameState.PAUSED || st == GameState.LEVEL_COMPLETE) {
@@ -118,6 +145,14 @@ suspend fun main() = Korge(
         down(Key.DOWN)  { navFocus()?.move(+1) }
         down(Key.LEFT)  { navFocus()?.activateLeft() }
         down(Key.RIGHT) { navFocus()?.activateRight() }
+        // vi-style focus nav IN ADDITION to the arrows, for consistency with the debug
+        // panels. Gated on !showDebugOverlay so they can't clash with the debug menus'
+        // h/j/k/l (which require the overlay) or the J jump-toggle. No-op in GameScene
+        // (navFocus() == null), so flight (arrows/WASD) is untouched.
+        down(Key.K) { if (!engine.showDebugOverlay) navFocus()?.move(-1) }
+        down(Key.J) { if (!engine.showDebugOverlay) navFocus()?.move(+1) }
+        down(Key.H) { if (!engine.showDebugOverlay) navFocus()?.activateLeft() }
+        down(Key.L) { if (!engine.showDebugOverlay) navFocus()?.activateRight() }
         // ── Text entry (seed field) ─────────────────────────────────────────────
         // Routed stage-level like the rest; the scene gates whether it's capturing.
         // Digits only (seeds are numeric for now); backspace edits. No per-frame polling.
@@ -135,8 +170,10 @@ suspend fun main() = Korge(
             if (c != null) (sc.currentScene as? TextInputTarget)?.onChar(c)
         }
         // [C] copies the seed on the pause overlay (the Menu editor's COPY is a focus item).
+        // Yields 'C' to the JUMP picker (where it = Controller) while that menu is open.
         down(Key.C) {
-            if (engine.gameState.value == GameState.PAUSED) (sc.currentScene as? GameScene)?.copySeedFromPause()
+            if (engine.debugSubMenu != DebugSubMenu.JUMP && engine.gameState.value == GameState.PAUSED)
+                (sc.currentScene as? GameScene)?.copySeedFromPause()
         }
         // ~ (backtick/tilde key) toggles the debug overlay, console-style.
         // The grave key maps to DIFFERENT Key enums per backend: JVM/AWT → Key.BACKQUOTE,
@@ -148,11 +185,14 @@ suspend fun main() = Korge(
             // covers the JS gap. All in one handler so it can't double-toggle.
             if (ev.key == Key.BACKQUOTE || ev.key == Key.GRAVE || ev.keyCode == 192 ||
                 ev.character == '`' || ev.character == '~') {
-                engine.showDebugOverlay = !engine.showDebugOverlay
-                if (!engine.showDebugOverlay) setJump(false)  // hide the jump picker with the overlay
+                engine.showDebugOverlay = !engine.showDebugOverlay  // setter collapses any sub-menu when off
             }
         }
     }
+
+    // Derive the JUMP picker's visibility from the shared debug state every frame, so it
+    // stays in sync no matter which file triggered the transition (e.g. [G] in GameScene).
+    stage.addUpdater { jumpOverlay.visible = engine.showDebugOverlay && engine.debugSubMenu == DebugSubMenu.JUMP }
 
     sc.changeTo { MenuScene(engine, sc) }
 }
