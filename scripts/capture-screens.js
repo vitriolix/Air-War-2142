@@ -62,11 +62,11 @@ const SCREENS = [
 
   for (const [name, key, settle] of SCREENS) {
     await page.keyboard.press('j');         // open picker
-    await sleep(120);
+    await sleep(200);                       // wait for picker to render
     await page.keyboard.press(key);         // jump to the screen (closes picker)
     await sleep(settle);
     await page.keyboard.press('Backquote'); // debug OFF → clean frame (no overlay/picker)
-    await sleep(180);
+    await sleep(200);                       // wait for scene to render cleanly
     await page.screenshot({ path: path.join(OUT, `${name}.png`) });
     console.log('  captured', name);
     await page.keyboard.press('Backquote'); // debug ON again for the next jump
