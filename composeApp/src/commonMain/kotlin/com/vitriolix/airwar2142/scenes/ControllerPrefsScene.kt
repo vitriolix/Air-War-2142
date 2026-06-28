@@ -10,6 +10,11 @@ import com.vitriolix.airwar2142.CANVAS_HEIGHT
 import com.vitriolix.airwar2142.logic.GameEngine
 import com.vitriolix.airwar2142.render.Fonts
 
+// Cross-platform text vertical centering: use font size instead of text.height (which differs between JVM/web).
+// Cap-height ratio ~0.72 means the ascender peaks ~72% of the em-square; centering uses em-square center.
+private fun centerTextVertically(containerY: Double, containerHeight: Double, fontSize: Double): Double =
+    containerY + containerHeight / 2.0 - fontSize * 0.36
+
 class ControllerPrefsScene(
     private val engine: GameEngine,
     private val nav: SceneContainer,
@@ -62,14 +67,14 @@ class ControllerPrefsScene(
             if (listening) solidRect(800.0, 80.0, RGBA(0, 229, 255, 40)).position(100.0, cy)
             val rowLabel = text(label, 36.0, if (listening) Colors["#00E5FF"] else Colors.WHITE, font = Fonts.content)
             rowLabel.x = 116.0
-            rowLabel.y = cy + (80.0 - rowLabel.height) / 2.0
+            rowLabel.y = centerTextVertically(cy, 80.0, 36.0)
             // Chip: right-anchored, right edge 32px in from row right (x=868)
             val chipW = if (listening) 340.0 else 120.0
             val chipX = 868.0 - chipW
             solidRect(chipW, 56.0, RGBA(255, 255, 255, 20)).position(chipX, cy + 12.0)
             val chipLabel = text(if (listening) "PRESS A BUTTON…" else chip, 36.0, Colors["#00E5FF"], font = Fonts.content)
             chipLabel.x = chipX + (chipW - chipLabel.width) / 2.0
-            chipLabel.y = (cy + 12.0) + (56.0 - chipLabel.height) / 2.0
+            chipLabel.y = centerTextVertically(cy + 12.0, 56.0, 36.0)
             val listenAct = rebuild(idx, idx)
             solidRect(800.0, 80.0, RGBA(0, 0, 0, 1)).position(100.0, cy)
                 .onClickSuspend(views.coroutineContext) { listenAct() }
@@ -96,7 +101,7 @@ class ControllerPrefsScene(
         solidRect(280.0, 70.0, invFill).position(100.0, 640.0)
         val invText = text(if (invertY) "INVERT Y: ON" else "INVERT Y: OFF", 36.0, invColor, font = Fonts.content)
         invText.x = 116.0
-        invText.y = 640.0 + (70.0 - invText.height) / 2.0
+        invText.y = centerTextVertically(640.0, 70.0, 36.0)
         solidRect(280.0, 70.0, RGBA(0, 0, 0, 1)).position(100.0, 640.0)
             .onClickSuspend(views.coroutineContext) { invAct() }
         fc.add(caretX, 640.0 + (70.0 - 44.0) / 2.0, invAct)
@@ -118,7 +123,7 @@ class ControllerPrefsScene(
         solidRect(80.0, 60.0, Colors["#FF9900"]).position(100.0, 840.0)
         val decText = text("  -  ", 36.0, Colors.WHITE, font = Fonts.content)
         decText.x = 100.0
-        decText.y = 840.0 + (60.0 - decText.height) / 2.0
+        decText.y = centerTextVertically(840.0, 60.0, 36.0)
         solidRect(80.0, 60.0, RGBA(0, 0, 0, 1)).position(100.0, 840.0)
             .onClickSuspend(views.coroutineContext) { decAct() }
         fc.add(caretX, 840.0 + (60.0 - 44.0) / 2.0, decAct, leftAct = decAct, rightAct = incAct)
@@ -130,7 +135,7 @@ class ControllerPrefsScene(
         solidRect(80.0, 60.0, Colors["#FF9900"]).position(820.0, 840.0)
         val incText = text("  +  ", 36.0, Colors.WHITE, font = Fonts.content)
         incText.x = 820.0
-        incText.y = 840.0 + (60.0 - incText.height) / 2.0
+        incText.y = centerTextVertically(840.0, 60.0, 36.0)
         solidRect(80.0, 60.0, RGBA(0, 0, 0, 1)).position(820.0, 840.0)
             .onClickSuspend(views.coroutineContext) { incAct() }
 
@@ -140,7 +145,7 @@ class ControllerPrefsScene(
         solidRect(380.0, 80.0, RGBA(255, 255, 255, 20)).position(100.0, backY)
         val backText = text("BACK", 41.0, Colors.WHITE, font = Fonts.content)
         backText.x = 130.0
-        backText.y = backY + (80.0 - backText.height) / 2.0
+        backText.y = centerTextVertically(backY, 80.0, 41.0)
         solidRect(380.0, 80.0, RGBA(0, 0, 0, 1)).position(100.0, backY)
             .onClickSuspend(views.coroutineContext) { backAct() }
         fc.add(caretX, backY + (80.0 - 44.0) / 2.0, backAct)
