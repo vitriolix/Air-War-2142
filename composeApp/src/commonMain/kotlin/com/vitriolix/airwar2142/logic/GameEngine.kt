@@ -16,6 +16,15 @@ enum class ControlMode {
     TILT, TOUCH, KEYBOARD
 }
 
+/**
+ * Which debug *sub-menu* is currently active, when [GameEngine.showDebugOverlay] is on.
+ * The debug surface is a small stack: off → BASE readout → one of the sub-menus. Only
+ * one is ever visible; opening a sub-menu hides the base readout (and any other). Each
+ * sub-menu owns its keys (gated on being the active menu), so e.g. `J` and the motion
+ * `j` never collide. ESC backs a sub-menu out to BASE. See main.kt / GameScene.
+ */
+enum class DebugSubMenu { NONE, JUMP, MOTION }
+
 enum class PowerUpType {
     DOUBLE_SHOT, EXTRA_ROLL, FUEL_REFILL, ESCORTS, SCREEN_BOMB
 }
@@ -143,6 +152,13 @@ class GameEngine(
     // Persistent velocity for keyboard inertia movement
     private var velX = 0f
     private var velY = 0f
+
+    // Tunable keyboard-motion params — live-editable via the in-game MOTION debug
+    // panel (GameScene, key [G]). Defaults are the verified stop-on-release values.
+    var kbAccel        = 3.0f   // velocity added per tick while a direction key is held
+    var kbMaxSpeed     = 12f    // total velocity clamp (also normalises diagonals)
+    var kbHeldFriction = 0.80f  // velocity decay/tick WHILE held (ramp-up + steady feel)
+    var kbStopFriction = 0.40f  // decay/tick with NO key on that axis (post-release glide; 0 = instant stop)
     var keyShoot = false
     var keyRollTriggered = false
 
@@ -160,7 +176,18 @@ class GameEngine(
     // Configuration
     var sfxEnabled = true
     var sensitivity = 1.0f
+
+    // Debug overlay master switch (toggled by `~` and the Settings item). Turning it OFF
+    // always collapses any open sub-menu, so callers don't have to remember to reset it.
     var showDebugOverlay = false
+        set(value) {
+            field = value
+            if (!value) debugSubMenu = DebugSubMenu.NONE
+        }
+    // Active debug sub-menu (only meaningful while showDebugOverlay). Single source of
+    // truth shared by main.kt (JUMP picker) and GameScene (MOTION panel) so the two
+    // coordinate — only the active menu's keys respond. See [DebugSubMenu].
+    var debugSubMenu: DebugSubMenu = DebugSubMenu.NONE
 
     init {
         generateBackgrounds()
@@ -317,18 +344,23 @@ class GameEngine(
         when (_controlMode.value) {
             ControlMode.KEYBOARD -> {
                 // Each held key adds acceleration; friction decays velocity every tick.
-                // Equilibrium speed = accel / (1 - friction) = 3 / 0.2 = 15 → clamped to 12.
-                val accel   = 3.0f
-                val friction = 0.80f
-                val maxSpeed = 12f
+                // Equilibrium speed = accel / (1 - heldFriction) = 3 / 0.2 = 15 → clamped to 12.
+                // An axis with no key held damps HARD (stopFriction) so the plane parks on
+                // release instead of coasting — coasting made fine aiming impossible (a tap
+                // glided ~12px, a full-speed release ~48px). Per-axis so diagonal release is
+                // crisp too. Digital d-pad maps onto these same keys, so it's fixed too.
+                val accel        = kbAccel
+                val heldFriction = kbHeldFriction
+                val stopFriction = kbStopFriction
+                val maxSpeed     = kbMaxSpeed
 
                 if (keyLeft)  velX -= accel
                 if (keyRight) velX += accel
                 if (keyUp)    velY -= accel
                 if (keyDown)  velY += accel
 
-                velX *= friction
-                velY *= friction
+                velX *= if (keyLeft || keyRight) heldFriction else stopFriction
+                velY *= if (keyUp   || keyDown ) heldFriction else stopFriction
 
                 // Clamp total speed — also normalises diagonals automatically
                 val speed = kotlin.math.sqrt(velX * velX + velY * velY)

@@ -39,10 +39,10 @@ const H = Number(process.env.H || 1500);   // native logical canvas height
 const SCREENS = [
   ['1-menu',            'm', 400],
   ['2-hud',             'h', 700],
-  ['3-paused',          'u', 400],
+  ['3-paused',          'p', 400],
   ['4-settings',        's', 500],
-  ['5-controller-prefs','k', 500],
-  ['6-gameover',        'o', 500],
+  ['5-controller-prefs','c', 500],
+  ['6-gameover',        'g', 500],
   ['7-victory',         'v', 500],
 ];
 
