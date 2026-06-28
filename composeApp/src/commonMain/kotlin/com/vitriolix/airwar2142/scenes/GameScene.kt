@@ -9,9 +9,16 @@ import korlibs.korge.input.onClickSuspend
 import korlibs.korge.input.singleTouch
 import korlibs.korge.scene.Scene
 import korlibs.korge.scene.SceneContainer
+import korlibs.korge.style.*
+import korlibs.korge.ui.UISlider
+import korlibs.korge.ui.changed
+import korlibs.korge.ui.uiSlider
+import korlibs.korge.ui.uiText
 import korlibs.korge.view.*
 import korlibs.math.geom.Angle
 import korlibs.math.geom.Point
+import korlibs.math.geom.Size
+import korlibs.number.niceStr
 import com.vitriolix.airwar2142.CANVAS_HEIGHT
 import com.vitriolix.airwar2142.ecs.Particle
 import com.vitriolix.airwar2142.ecs.Position
@@ -141,7 +148,7 @@ class GameScene(
             }
             // Discoverability for the stage-level jump-to-screen picker (see main.kt):
             // available from any scene while this debug overlay is up.
-            text("[ J ]  jump to screen", dbgFontSize * 0.85, RGBA(255, 204, 0, 220))
+            text("[ J ]  jump to screen     [ M ]  motion", dbgFontSize * 0.85, RGBA(255, 204, 0, 220))
                 .position(6.0, 9.0 + dbgLabels.size * dbgRowH)
         }.position(8.0, dbgY)
         val dbgValues = dbgLabels.indices.map { i ->
@@ -161,6 +168,61 @@ class GameScene(
         // roll start/end); movement, roll squash/rotation and the invuln blink are all
         // cheap transforms applied to the container every frame.
         var lastPlayerShapeKey: String? = null
+
+        // ── Motion tuning panel (KorGE UI widgets) ──────────────────────────────
+        // Live-tune the keyboard-motion params while flying. Open with [G] while the debug
+        // overlay (`~`) is up — it's the MOTION debug sub-menu. Built from uiSlider/uiText
+        // widgets (not hand-rolled) — the project is migrating UI onto the widget toolkit.
+        // Keyboard nav (vi-style; only while this menu is active — see the keys block):
+        //   j / k = next / prev row,  h / l = decrease / increase the selected slider.
+        // Doesn't collide with flying (arrows + WASD) or the JUMP picker — keys are gated
+        // on the active debug sub-menu. Mouse drag still works too.
+        // Docked bottom-left, sharing the base readout's footprint (same x=8, same bottom
+        // edge ch-46) — a sub-menu replaces the base readout in place rather than floating.
+        val motionPanel = container {
+            solidRect(396.0, 392.0, RGBA(0, 0, 0, 190))
+        }.position(8.0, ch - 46.0 - 392.0)
+        motionPanel.styles { textColor = Colors.WHITE; textSize = 22.0 }
+        // Selected-row highlight (sits behind the labels/sliders; moved on j/k).
+        val motionSelHighlight = motionPanel.solidRect(372.0, 58.0, RGBA(0, 229, 255, 45)).position(12.0, 0.0)
+        motionPanel.uiText("MOTION  ·  [M] back · j/k row · h/l adjust", Size(372.0, 26.0)) {
+            styles { textColor = Colors["#00E5FF"]; textSize = 21.0 }
+        }.position(16.0, 12.0)
+        motionPanel.visible = false
+
+        val motionSliders = mutableListOf<UISlider>()
+        val motionRowYs = mutableListOf<Double>()
+        var motionRowY = 56.0
+        fun motionRow(name: String, lo: Double, hi: Double, stepV: Double, get: () -> Float, set: (Float) -> Unit) {
+            val rowY = motionRowY
+            val label = motionPanel.uiText("", Size(364.0, 24.0)).position(16.0, rowY)
+            fun refresh() { label.text = "$name   ${get().toDouble().niceStr(2)}" }
+            refresh()
+            val slider = motionPanel.uiSlider(value = get().toDouble(), min = lo, max = hi, step = stepV, size = Size(360.0, 18.0)) {
+                position(18.0, rowY + 30.0)
+                showTooltip = false   // value is always shown in the row label; the tooltip renders
+                                      // in a separate container that our panel.visible toggle wouldn't hide
+                changed { v -> set(v.toFloat()); refresh() }
+            }
+            motionSliders += slider
+            motionRowYs += rowY
+            motionRowY += 78.0
+        }
+        motionRow("ACCEL",         0.5, 8.0,  0.1,  { engine.kbAccel },        { engine.kbAccel = it })
+        motionRow("MAX SPEED",     4.0, 24.0, 0.5,  { engine.kbMaxSpeed },     { engine.kbMaxSpeed = it })
+        motionRow("HOLD FRICTION", 0.5, 0.95, 0.01, { engine.kbHeldFriction }, { engine.kbHeldFriction = it })
+        motionRow("STOP FRICTION", 0.0, 0.95, 0.01, { engine.kbStopFriction }, { engine.kbStopFriction = it })
+
+        var motionSel = 0
+        fun selectMotionRow(i: Int) {
+            val n = motionRowYs.size
+            motionSel = ((i % n) + n) % n   // wrap around top/bottom
+            motionSelHighlight.position(12.0, motionRowYs[motionSel] - 6.0)
+        }
+        selectMotionRow(0)
+        // ±one step on the selected slider; UISlider clamps to [min,max] and fires onChange
+        // (which refreshes its label), so the spinner value + plane motion update live.
+        fun nudgeMotion(dir: Int) { val s = motionSliders[motionSel]; s.value += dir * s.step }
 
         // ── Overlay ───────────────────────────────────────────────────────────
         val overlayBg   = solidRect(1000.0, ch, RGBA(0, 0, 0, 0)).position(0.0, 0.0)
@@ -224,6 +286,18 @@ class GameScene(
             down(Key.DOWN)  { hDown.down()  };  up(Key.DOWN)  { hDown.up()  }
             down(Key.S)     { hDown.down()  };  up(Key.S)     { hDown.up()  }
             down(Key.SPACE) { hShoot.down() };  up(Key.SPACE) { hShoot.up() }
+            // [G] enters/leaves the MOTION debug sub-menu (only while the debug overlay is
+            // up). j/k select a row, h/l adjust it — all gated on MOTION being active, so
+            // they never touch flight (arrows/WASD) or the JUMP picker's keys.
+            // [M] = Motion (mnemonic). Yields to the JUMP picker (where M = Menu) while it's up.
+            down(Key.M) {
+                if (engine.showDebugOverlay && engine.debugSubMenu != DebugSubMenu.JUMP)
+                    engine.debugSubMenu = if (engine.debugSubMenu == DebugSubMenu.MOTION) DebugSubMenu.NONE else DebugSubMenu.MOTION
+            }
+            onSubMenu(engine, DebugSubMenu.MOTION, Key.K) { selectMotionRow(motionSel - 1) }
+            onSubMenu(engine, DebugSubMenu.MOTION, Key.J) { selectMotionRow(motionSel + 1) }
+            onSubMenu(engine, DebugSubMenu.MOTION, Key.H) { nudgeMotion(-1) }
+            onSubMenu(engine, DebugSubMenu.MOTION, Key.L) { nudgeMotion(+1) }
         }
 
         // ── Touch input — use *Anywhere variants to bypass hitTest on SContainer ─
@@ -368,16 +442,19 @@ class GameScene(
             }
 
             // ── Debug overlay ─────────────────────────────────────────────────
-            // FPS accumulator runs always so the counter is correct the instant it's
-            // toggled on; the (costly) per-field text updates only run when visible.
-            debugContainer.visible = engine.showDebugOverlay
+            // Visibility is driven from the single source of truth (engine.debugSubMenu):
+            // base readout only at BASE; motion panel only at MOTION. Opening a sub-menu
+            // hides the base readout. FPS accumulator runs always so the counter is correct
+            // the instant it's shown; the (costly) per-field text updates only run when visible.
+            debugContainer.visible = engine.showDebugOverlay && engine.debugSubMenu == DebugSubMenu.NONE
+            motionPanel.visible    = engine.showDebugOverlay && engine.debugSubMenu == DebugSubMenu.MOTION
             fpsAccumMs += dt.inWholeMilliseconds.toDouble(); fpsFrames++
             if (fpsAccumMs >= 500.0) {
                 fpsDisplay     = (fpsFrames * 1000.0 / fpsAccumMs).toInt()
                 frameMsDisplay = fpsAccumMs / fpsFrames
                 fpsAccumMs     = 0.0; fpsFrames = 0
             }
-            if (engine.showDebugOverlay) {
+            if (debugContainer.visible) {
                 val fpsColor = when {
                     fpsDisplay >= 55 -> Colors["#00FF88"]
                     fpsDisplay >= 30 -> Colors["#FFCC00"]
