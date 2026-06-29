@@ -9,10 +9,12 @@
 All assets are in this directory. Use them together as a unified reference system.
 
 ### Schematics (`/schematics/`)
-- **16 SVG technical drawings** — accurate proportions, scale-neutral vector graphics
-- Each aircraft shown in **3-view orthographic** (top/side/front) or **profile** (where 3-view would be ambiguous)
+- **14 full 3-view technical drawings** — accurate proportions, scale-neutral vector graphics
+- Each aircraft shown in **full 3-view orthographic** (top/side/front) for complete 3D geometry reference
+- 12 SVG files + 2 bitmaps (PNG/JPG) — bitmaps pending SVG conversion via task #32 pipeline
 - Source: Wikimedia Commons — CC0/CC-BY-SA/public domain
 - **Best for:** Wing/fuselage geometry, tail surfaces, engine nacelles, landing gear layout
+- **Side-view references:** 4 additional profile SVGs in `/photos/` for texture/skin design inspiration during modeling
 
 **Key aircraft for priority generation:**
 1. **Messerschmitt Bf-109** (German fighter — compact, single-engine) — most detailed schematic
@@ -31,7 +33,7 @@ All assets are in this directory. Use them together as a unified reference syste
 
 ### Paint Photos (`/photos/{temperate,tropical,arctic}/`)
 - **8 high-resolution museum/airshow photos** — reference for wear, weathering, panel lines
-- **Highest detail:** `boeing-b17-sentimental-journey-nose-art.jpg` (15 MB) — museum-restored, pristine paint, visible rivet detail
+- **Highest detail:** `boeing-b-17-sentimental-journey-nose-art.jpg` (15 MB) — museum-restored, pristine paint, visible rivet detail
 - **For realistic:** panel line shadows, paint chipping, metal reflections, nose art placement
 - **Best for:** Texture refinement, damage variant planning, decal/marking positions
 

@@ -1,34 +1,34 @@
 # Aircraft Reference Schematics
 
-All schematics in SVG format (vector graphics — scalable to any resolution without quality loss).
+**14 full 3-view orthographic schematics** in SVG format, plus 2 bitmaps pending SVG conversion (see task #32).
+
+✅ **Policy:** All schematics are 3-view (top/side/front) suitable for 3D modeling. Side-view reference images are in `/photos/` for texture/skin design inspiration. Bitmaps accepted when SVGs unavailable upstream (pending conversion pipeline).
 
 ## Inventory
 
 ### Axis Fighters
-- `messerschmitt-bf109-schematic.svg` — German fighter (294 KB)
-- `messerschmitt-me262-schematic.svg` — First operational jet fighter (563 KB)
+- `messerschmitt-me-262-schematic.svg` — First operational jet fighter (563 KB)
 
 ### Axis Bombers
-- `junkers-ju88-schematic.svg` — Fast dive bomber (520 KB)
-- `heinkel-he111-schematic.svg` — Medium bomber, glass nose (721 KB)
+- `junkers-ju-88-schematic.svg` — Fast dive bomber (520 KB)
+- `heinkel-he-111-schematic.svg` — Medium bomber, glass nose (721 KB)
 
 ### Allied Fighters
-- `northamerican-p51mustang-schematic.svg` — Long-range escort fighter (66 KB)
-- `supermarine-spitfire-schematic.svg` — British interceptor (114 KB)
-- `lockheed-p38lightning-schematic.svg` — Twin-boom fighter (139 KB)
+- `northamerican-p-51_mustang-schematic.svg` — Long-range escort fighter (66 KB)
+- `lockheed-p-38_lightning-schematic.svg` — Twin-boom fighter (139 KB)
 
 ### Allied Bombers
-- `boeing-b17-schematic.svg` — Heavy bomber, Flying Fortress (564 KB)
-- `northamerican-b25mitchell-schematic.svg` — Medium bomber, dorsal turret (216 KB)
-- `douglas-a26invader-schematic.svg` — Light attack bomber (508 KB)
+- `boeing-b-17-schematic.svg` — Heavy bomber, Flying Fortress (564 KB)
+- `northamerican-b-25_mitchell-schematic.svg` — Medium bomber, dorsal turret (216 KB)
+- `douglas-a-26_invader-schematic.png` — Light attack bomber (PNG, 279 KB — pending SVG conversion)
 
 ### Modern/Novelty
-- `republic-p47thunderbolt-schematic.svg` — Heavy fighter, 8 guns (377 KB)
-- `lockheed-sr71-schematic.svg` — Reconnaissance, no weapons (2.2 KB)
-- `lockheed-f117nighthawk-schematic.svg` — Stealth fighter (2.2 KB)
-- `lockheed-ac130-schematic.svg` — Gunship, multiple cannons (84 KB)
-- `fokker-dr1-schematic.svg` — WWI Red Baron triplane (2.2 KB)
-- `wright-flyer1903-schematic.svg` — First powered aircraft (2.2 KB)
+- `republic-p-47_thunderbolt-schematic.svg` — Heavy fighter, 8 guns (377 KB)
+- `lockheed-sr-71-schematic.svg` — Reconnaissance, no weapons (168 KB)
+- `lockheed-f-117_nighthawk-schematic.svg` — Stealth fighter (58 KB)
+- `lockheed-ac-130-schematic.svg` — Gunship, multiple cannons (56 KB)
+- `fokker-dr-1-schematic.jpg` — WWI Red Baron triplane, 3-view (JPG, 134 KB — pending SVG conversion)
+- `wright-flyer-1903-schematic.svg` — First powered aircraft (188 KB)
 
 ## Paint Scheme References
 

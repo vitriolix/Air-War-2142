@@ -4,7 +4,7 @@ High-resolution museum and airshow photos of actual aircraft showing historical 
 
 ## TEMPERATE / EUROPEAN
 
-### messerschmitt-bf109g4-red7-airworthy.jpg
+### messerschmitt-bf-109g4-red7-airworthy.jpg
 - **Aircraft:** Messerschmitt Bf 109G-4 'Red 7' (D-FWME)
 - **Source:** Flying Legends airshow, Duxford, UK (July 2015)
 - **Status:** Restored Spanish-built Hispano Buchon, airworthy
@@ -17,7 +17,7 @@ High-resolution museum and airshow photos of actual aircraft showing historical 
 
 ---
 
-### northamerican-p51d-american-beauty-1944.jpg
+### northamerican-p-51d-american-beauty-1944.jpg
 - **Aircraft:** North American P-51D-15-NA Mustang (44-15459)
 - **Pilot:** Captain John Voll, 308th Fighter Squadron / 31st Fighter Group
 - **Year:** 1944 USAAF official photo
@@ -27,6 +27,33 @@ High-resolution museum and airshow photos of actual aircraft showing historical 
 - **License:** Public domain (U.S. Army Air Forces)
 
 **Reference Value:** Canonical USAAF temperate scheme; shows squadron markings and natural color photos from operational aircraft.
+
+---
+
+### fokker-dr-1-sideview-reference.svg
+- **Aircraft:** Fokker Dr.I (triplane)
+- **Type:** Side-view schematic (profile only, not 3-view)
+- **Source:** Historical technical drawing
+- **License:** Public domain
+- **Reference Value:** Color palette reference for WWI German fighter camouflage. Use for texture/skin design inspiration.
+
+---
+
+### messerschmitt-bf-109-sideview-reference.svg
+- **Aircraft:** Messerschmitt Bf 109 (G variant)
+- **Type:** Side-view schematic (profile only; full 3-view available in schematics/)
+- **Source:** Historical technical drawing
+- **License:** Public domain
+- **Reference Value:** Profile silhouette and color distribution. Cross-reference with temperate/tropical photo variants for accurate RLM camouflage application.
+
+---
+
+### supermarine-spitfire-sideview-reference.svg
+- **Aircraft:** Supermarine Spitfire (Mk V)
+- **Type:** Side-view schematic (profile only; full 3-view available in schematics/)
+- **Source:** Historical technical drawing
+- **License:** Public domain
+- **Reference Value:** Elliptical wing profile and fuselage curve for design validation. Compare with invasion-stripe and raw aluminum variants for paint/weathering reference.
 
 ---
 
@@ -42,7 +69,7 @@ High-resolution museum and airshow photos of actual aircraft showing historical 
 
 ---
 
-### boeing-b17-sentimental-journey-nose-art.jpg
+### boeing-b-17-sentimental-journey-nose-art.jpg
 - **Aircraft:** Boeing B-17G Flying Fortress "Sentimental Journey"
 - **Nose Art:** Betty Grable (WWII-era pinup reference)
 - **Source:** Chico Air Museum, California (Commemorative Air Force fleet)
@@ -57,7 +84,7 @@ High-resolution museum and airshow photos of actual aircraft showing historical 
 
 ## TROPICAL / JUNGLE
 
-### messerschmitt-bf109g2-trop-raf-museum.jpg
+### messerschmitt-bf-109g2-trop-raf-museum.jpg
 - **Aircraft:** Messerschmitt Bf 109G-2/Trop 'Black 6'
 - **Location:** RAF Museum Hendon (London) — static display
 - **Resolution:** 2,816 × 2,112 px (1.38 MB)

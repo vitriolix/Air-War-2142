@@ -12,8 +12,8 @@ Copy and paste into Claude Desktop:
 Generate a 3D Messerschmitt Bf-109 (G variant) aircraft model in Blender via MCP.
 
 REFERENCE PACKAGE OVERVIEW:
-- Schematics: /Users/josh/src/antigravity-explorations/1942-android-clone/design/aircraft-reference/schematics/messerschmitt-bf109-schematic.svg (3-view orthographic: top, side, front)
-- Paint reference photo: /Users/josh/src/antigravity-explorations/1942-android-clone/design/aircraft-reference/photos/temperate/messerschmitt-bf109g4-red7-airworthy.jpg (museum-restored, pristine RLM colors)
+- Schematics: /Users/josh/src/antigravity-explorations/1942-android-clone/design/aircraft-reference/schematics/messerschmitt-bf-109-schematic.svg (3-view orthographic: top, side, front)
+- Paint reference photo: /Users/josh/src/antigravity-explorations/1942-android-clone/design/aircraft-reference/photos/temperate/messerschmitt-bf-109g4-red7-airworthy.jpg (museum-restored, pristine RLM colors)
 - Dimensional specs: DIMENSIONAL_SPECS.md → Bf-109 section (length 8.64m, span 9.87m, fuselage Ø 0.76m, dihedral 6°)
 - Color codes: COLOR_SWATCHES.md → Luftwaffe section (RLM 70 Green #47593A, RLM 71 Brown #4D4037, RLM 65 Light Blue #B8CCDB)
 - Workflow guide: BLENDER_HANDOFF.md → Phase 1 & 2 (core geometry + detail pass)
@@ -116,8 +116,8 @@ Once Bf-109 is approved:
 Generate a North American P-51D Mustang aircraft model in Blender.
 
 REFERENCE:
-- Schematic: /design/aircraft-reference/schematics/northamerican-p51mustang-schematic.svg
-- Paint photo: /design/aircraft-reference/photos/temperate/northamerican-p51d-american-beauty-1944.jpg
+- Schematic: /design/aircraft-reference/schematics/northamerican-p-51_mustang-schematic.svg
+- Paint photo: /design/aircraft-reference/photos/temperate/northamerican-p-51d-american-beauty-1944.jpg
 - Specs: DIMENSIONAL_SPECS.md → P-51 section
 - Colors: COLOR_SWATCHES.md → USAAF section (Olive Drab #556B2F, Neutral Gray #8B8680, Insignia Blue #3E54A4)
 
