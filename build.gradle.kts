@@ -60,7 +60,7 @@ tasks.register<WebConsole>("webConsole") { group = gameGroup; description = "Boo
 // Native custom-task helpers (buildSrc) — logic lives in the Gradle task context, not bash.
 tasks.register<RenderDocs>("renderDocs") { group = gameGroup; description = "Render Markdown docs (README + docs/) to HTML and open the index. --file=<path> for one." }
 tasks.register<PrOpen>("openPr")         { group = gameGroup; description = "Open a GitHub PR's page in the browser. --pr=<number|branch> (default: current branch)." }
-tasks.register<DownloadModels>("downloadModels") { group = gameGroup; description = "Download 3D aircraft models from Sketchfab. --model=<name> for one model; --all for all. (Default: list available.)" }
+tasks.register<DownloadModels>("downloadModels") { group = gameGroup; description = "Download 3D aircraft models from Sketchfab. --model=<number|short-name|full-name> for one model; --all for all. (Default: list available; run scripts/download-models.sh directly for an interactive picker.)" }
 tasks.register<DesignExport>("designExport") { group = gameGroup; description = "Code → Claude Design: stage the design/ handoff bundle (refresh assets, open spec, print push steps)." }
 tasks.register<DesignImport>("designImport") { group = gameGroup; description = "Claude Design → Code: review refined files dropped in design/incoming/ and print how to apply them." }
 tasks.register<DesignPush>("designPush")     { group = gameGroup; description = "Code → Claude Design: compute the Code-owned push manifest (design/.design-push-manifest.json) for /design-sync to upload." }

@@ -10,11 +10,15 @@ import javax.inject.Inject
 /**
  * Download 3D aircraft models from Sketchfab.
  * Models are stored in design/aircraft-reference/models/ (ignored by git).
- * Usage: ./gradlew downloadModels [--model=name|--all]
+ * Usage: ./gradlew downloadModels [--model=number|short-name|full-name|--all]
+ *
+ * The Gradle daemon has no controlling terminal, so this can only list models when run
+ * without --model (no interactive prompt) — run scripts/download-models.sh directly for
+ * the "enter a number" picker (same split as pruneBranches; see TASKS.md #20).
  */
 abstract class DownloadModels : DefaultTask() {
 
-    @get:Option(option = "model", description = "Model name to download (e.g., 'Bf-109'), or omit to list available models.")
+    @get:Option(option = "model", description = "Model number, short name, or full name to download (e.g., '4', 'Bf-109', or 'Messerschmitt Bf-109'), or omit to list available models.")
     @get:Input
     @get:Optional
     abstract val model: Property<String>
@@ -27,7 +31,7 @@ abstract class DownloadModels : DefaultTask() {
     @get:Inject
     abstract val exec: ExecOperations
 
-    private val modelsDir = "design/aircraft-reference/models"
+    private val scriptPath = "scripts/download-models.sh"
 
     @TaskAction
     fun download() {
@@ -35,7 +39,6 @@ abstract class DownloadModels : DefaultTask() {
         val downloadAll = all.orNull == true
 
         // Check if script exists
-        val scriptPath = "$modelsDir/download-models.sh"
         if (!java.io.File(scriptPath).exists()) {
             throw IllegalStateException("Script not found: $scriptPath")
         }
