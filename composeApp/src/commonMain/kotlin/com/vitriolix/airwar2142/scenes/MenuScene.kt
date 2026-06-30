@@ -17,6 +17,12 @@ import com.vitriolix.airwar2142.logic.SeedField
 import com.vitriolix.airwar2142.platform.Clipboard
 import com.vitriolix.airwar2142.render.Fonts
 
+// Cross-platform text vertical centering: use font size instead of text.height (which differs between JVM/web).
+// Formula: (containerHeight - fontSize) / 2, which is equivalent to the original (height - text.height) / 2
+// when text.height ≈ fontSize (typical for most fonts).
+private fun centerTextVertically(containerY: Double, containerHeight: Double, fontSize: Double): Double =
+    containerY + (containerHeight - fontSize) / 2.0
+
 class MenuScene(
     private val engine: GameEngine,
     private val nav: SceneContainer
@@ -74,23 +80,26 @@ class MenuScene(
         // Collapsed: a normal menu item — "SEED" left, current value (gold) right.
         val collapsed = container {
             solidRect(840.0, 80.0, RGBA(0, 0, 0, 85)).position(80.0, seedRowY)
-            text("SEED", 46.0, Colors.WHITE, font = Fonts.content).position(108.0, seedRowY + 14.0)
+            text("SEED", 46.0, Colors.WHITE, font = Fonts.content)
+                .position(108.0, centerTextVertically(seedRowY, 80.0, 46.0))
         }
         val collapsedValue = text("", 40.0, Colors["#FFCC00"], font = Fonts.content)
-            .also { collapsed.addChild(it) }.position(0.0, seedRowY + 18.0)
+            .also { collapsed.addChild(it) }.position(0.0, centerTextVertically(seedRowY, 80.0, 40.0))
 
         // Expanded: editor — field (label + value + blinking caret) and the COPY/PASTE/ROLL row.
         val editor = container { visible = false }
         editor.solidRect(1000.0, 250.0, RGBA(0, 0, 0, 140)).position(0.0, seedRowY - 10.0)   // scrim behind editor
         editor.solidRect(840.0, 80.0, RGBA(0, 229, 255, 40)).position(80.0, seedRowY)   // editingFill
-        editor.text("SEED", 26.0, RGBA(255, 255, 255, 160), font = Fonts.content).position(104.0, seedRowY + 6.0)
-        val fieldValue = editor.text("", 36.0, Colors["#FFCC00"], font = Fonts.content).position(104.0, seedRowY + 38.0)
+        editor.text("SEED", 26.0, RGBA(255, 255, 255, 160), font = Fonts.content)
+            .position(104.0, centerTextVertically(seedRowY, 80.0, 26.0))
+        val fieldValue = editor.text("", 36.0, Colors["#FFCC00"], font = Fonts.content)
+            .position(104.0, centerTextVertically(seedRowY, 80.0, 36.0))
         val textCaret = editor.solidRect(4.0, 36.0, Colors.WHITE).position(104.0, seedRowY + 38.0)
 
         // Action row (150×72 ghost rects) at y=980. activate() handlers do the work.
         val copyBtnFill = editor.solidRect(150.0, 72.0, RGBA(255, 255, 255, 20)).position(80.0, 980.0)
         val copyBtnLabel = editor.text("COPY", 34.0, Colors.WHITE, font = Fonts.content)
-        copyBtnLabel.position(80.0 + (150.0 - copyBtnLabel.width) / 2.0, 980.0 + 19.0)
+        copyBtnLabel.position(80.0 + (150.0 - copyBtnLabel.width) / 2.0, centerTextVertically(980.0, 72.0, 34.0))
         editor.solidRect(150.0, 72.0, RGBA(255, 255, 255, 20)).position(246.0, 980.0)
         val pasteBtnLabel = actionLabel(editor, "PASTE", 246.0)
         editor.solidRect(150.0, 72.0, RGBA(255, 255, 255, 20)).position(412.0, 980.0)
@@ -187,13 +196,14 @@ class MenuScene(
 
     private fun SContainer.menuButtonView(label: String, x: Double, y: Double, action: suspend () -> Unit) {
         solidRect(840.0, 80.0, RGBA(0, 0, 0, 85)).position(x, y)
-        text(label, 46.0, Colors.WHITE, font = Fonts.content).position(x + 24.0, y + 14.0)
+        text(label, 46.0, Colors.WHITE, font = Fonts.content)
+            .position(x + 24.0, centerTextVertically(y, 80.0, 46.0))
         solidRect(840.0, 80.0, RGBA(0, 0, 0, 1)).position(x, y).onClickSuspend(views.coroutineContext) { action() }
     }
 
     private fun actionLabel(parent: Container, label: String, rectX: Double): Text {
         val t = parent.text(label, 34.0, Colors.WHITE, font = Fonts.content)
-        t.position(rectX + (150.0 - t.width) / 2.0, 980.0 + 19.0)
+        t.position(rectX + (150.0 - t.width) / 2.0, centerTextVertically(980.0, 72.0, 34.0))
         return t
     }
 }
