@@ -39,6 +39,16 @@ project memory.)
 - [**`refinement-mockup.html`**](refinement-mockup.html) — ASPIRATIONAL mockup, labeled NOT-current; a refine-toward target only
 - `screens/` — the raw screenshots `spec.html` embeds (regenerate with `./gradlew captureScreens`)
 
+## Reference materials
+
+- [**Aircraft Reference Collection**](aircraft-reference/INDEX.md) — 3D modeling handoff for Blender MCP
+  - SVG schematics (16 aircraft, technical blueprints)
+  - Paint reference photos (8 high-res museum images)
+  - [Blender MCP workflow guide](aircraft-reference/BLENDER_HANDOFF.md)
+  - [Dimensional specifications](aircraft-reference/DIMENSIONAL_SPECS.md) (precise measurements per aircraft)
+  - [Color swatches](aircraft-reference/COLOR_SWATCHES.md) (hex codes from museum references)
+  - [Claude Desktop test prompts](aircraft-reference/CLAUDE_DESKTOP_PROMPT.md) (ready-to-paste for Blender generation)
+
 > Rendered into the browsable docs by `./gradlew renderDocs` (it copies this whole folder, so the
 > links above resolve there too). The sprite gallery in `spec.html` needs `assets/` populated —
 > run `./gradlew designExport` first if it's a fresh checkout.
