@@ -1,0 +1,7 @@
+# 3D model files - use download-models.sh to fetch
+*.glb
+*.fbx
+*.obj
+*.blend
+*.ma
+/*/
