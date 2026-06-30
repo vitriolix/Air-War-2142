@@ -11,6 +11,94 @@ Newest entries on top. Each thread/follow-up carries a **Status**:
 
 ---
 
+## 003 — Claude Desktop ↔ Blender MCP Integration (Intel Mac / Blender 4.5)
+
+**Date:** 2026-06-29 · **Overall status:** `Done` (full stack validated).
+
+### Prompt
+
+> Investigate: establish a working MCP connection between Claude Desktop and Blender so Claude can read scene state, execute `bpy` code, and capture viewport screenshots. Intel Mac environment, Blender 4.5.11 LTS.
+
+### Findings
+
+**Verdict: Full integration working. Intel Mac is permanently locked to Blender 4.x LTS (Blender 5.x dropped Intel support), so the official Blender Lab MCP addon (requires 5.1+) is not viable. A community addon stack works reliably.**
+
+#### Correct Stack (Intel Mac)
+
+| Component | What it is | Source |
+|-----------|-----------|--------|
+| Blender 4.5.x LTS | The 3D app | blender.org |
+| Community MCP addon | TCP server inside Blender on port 9876 | github.com/ahujasid/blender-mcp (`addon.py`) |
+| `blender-mcp` pip package | stdio↔TCP bridge that Claude Desktop spawns | PyPI via `uvx` |
+| Claude Desktop | MCP client | Anthropic |
+
+#### Installation & Configuration
+
+1. **Community addon:** Download `addon.py` from `https://github.com/ahujasid/blender-mcp/blob/main/addon.py` (Raw link). In Blender: **Edit → Preferences → Add-ons → Install from Disk** → enable. Version 1.2+ auto-starts the TCP server on `localhost:9876` when enabled.
+
+2. **Claude Desktop config:** File location: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   ```json
+   {
+     "mcpServers": {
+       "blender": {
+         "command": "uvx",
+         "args": ["blender-mcp"]
+       }
+     },
+     ...rest of config
+   }
+   ```
+   Use `uvx` instead of bare `blender-mcp` — Claude Desktop spawns processes with its own limited environment PATH and does not inherit the shell's user-local paths (e.g., `~/.local/bin`). Bare command names silently fail at runtime. If `uvx` is not found, use the full absolute path (run `which uvx` to find it).
+
+3. **Launch order:** Blender must start before Claude Desktop. (1) Launch Blender (addon auto-starts server), (2) verify with `lsof -i :9876`, (3) launch Claude Desktop. If Claude Desktop launches first, it throws `"MCP blender: Server disconnected"` — this is a timing error, not a config error. Quit Claude Desktop, ensure Blender is running, relaunch.
+
+#### Core Failure Mode: Port 9876 Conflict
+
+Only one process can hold `localhost:9876`. Sources of conflict observed in practice:
+- Running `blender-mcp` manually in a terminal while Claude Desktop is active (Claude Desktop spawns its own instance, both fight for the port)
+- Having both the community addon entry *and* the official Claude Desktop Extension (`Blender:` uppercase) active simultaneously
+- A stale `blender-mcp` process from a previous session
+
+**Fixes:** One entry in `mcpServers`, no more. Remove the official Blender extension from Claude Desktop Extensions panel if installed. Never run `blender-mcp` from the terminal — Claude Desktop owns that process. Diagnostic: `lsof -i :9876` to see what's holding the port; kill orphaned processes.
+
+#### MCP Tool Negotiation
+
+MCP tools are negotiated **at conversation start**, not mid-conversation. Config changes require fully quitting Claude Desktop (Cmd+Q) and relaunching, not just closing the window. If a connectivity issue is fixed mid-conversation, tools will not appear — start a fresh conversation. Stuck tool-call states (spinning, toast errors) block the entire thread; the only fix is a new conversation.
+
+#### Screenshot / Viewport Image (4.5 LTS Limitation)
+
+This is a **known gap** with no clean solution on 4.5.
+
+| Tool | Works? | Notes |
+|------|--------|-------|
+| `blender:get_viewport_screenshot` | Partially | Image visible to Claude in context window but does NOT appear in the chat UI. Useless for joint review. |
+| `Blender:render_viewport_to_path` | No | Only on the official 5.1+ addon. Not available on 4.5. |
+| `bpy.ops.render.opengl(write_still=True)` | Yes | Saves to local disk at `scene.render.filepath`. Claude cannot see the file directly, but it lands on your machine at the specified path. |
+
+**Workaround for saving to disk:**
+```python
+import bpy
+bpy.context.scene.render.filepath = "/tmp/viewport_shot.png"
+bpy.ops.render.opengl(write_still=True)
+```
+
+Joint visual review currently requires an external step (e.g., Claude Design with exported SVG schematics) rather than live viewport capture.
+
+#### Summary of Fixes Applied
+
+1. Diagnosed missing `mcpServers` block in config entirely → added it
+2. Identified dual-server conflict (lowercase `blender:` pip install + uppercase `Blender:` Claude Extension) → removed Extension, kept single community addon entry
+3. Switched from bare `blender-mcp` command to `uvx blender-mcp` → resolved PATH issue
+4. Replaced manual terminal bridge runs with Claude Desktop–managed process → eliminated port conflicts
+5. Established launch order: Blender first, then Claude Desktop
+
+#### Open Items
+
+- No clean live screenshot pipeline on Intel/4.5. Options: (a) accept the `bpy.ops.render.opengl` workaround, (b) set up a file watcher on `/tmp/` and display externally, (c) wait for a community addon update that adds a screenshot endpoint.
+- `addon (1).py` duplicate file artifact in Blender preferences — low priority cleanup.
+
+---
+
 ## 002 — Menu screens: pixel-perfect alignment vs Design spec
 
 **Date:** 2026-06-27 · **Overall status:** `Done` (limitation identified).
