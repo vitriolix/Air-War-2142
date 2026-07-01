@@ -29,14 +29,21 @@ Sketchfab requires manual download for free models (no direct API access for aut
 
 Each model will provide instructions on where to save the downloaded `.glb` file.
 
-### Interactive Picker (run directly)
+### Interactive Picker
 
-`./gradlew downloadModels` can't prompt — the Gradle daemon has no controlling
-terminal (same limitation as `pruneBranches`; see `TASKS.md` #20). For an
-interactive "enter a number" picker, run the script directly instead:
+A plain `./gradlew downloadModels` can't prompt — the Gradle *daemon* has no
+controlling terminal (same limitation as `pruneBranches`; see `TASKS.md` #20).
+Two ways to get the "enter a number" picker:
 
 ```bash
+# Fastest — skips Gradle/JVM startup entirely:
 ./scripts/download-models.sh
+
+# Via the Gradle task surface instead — runs without the daemon so it can
+# prompt (slower to start, no daemon reuse, but discoverable via `./gradlew
+# tasks --group game`):
+npm run models:pick
+# equivalent to: ./gradlew downloadModels --no-daemon
 ```
 
 ### Manual Download (Alternative)

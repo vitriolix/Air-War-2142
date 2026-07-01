@@ -12,9 +12,17 @@ import javax.inject.Inject
  * Models are stored in design/aircraft-reference/models/ (ignored by git).
  * Usage: ./gradlew downloadModels [--model=number|short-name|full-name|--all]
  *
- * The Gradle daemon has no controlling terminal, so this can only list models when run
- * without --model (no interactive prompt) — run scripts/download-models.sh directly for
- * the "enter a number" picker (same split as pruneBranches; see TASKS.md #20).
+ * The Gradle *daemon* has no controlling terminal, so a normal (daemon-backed) invocation
+ * can only list models when run without --model (no interactive prompt) — same split as
+ * pruneBranches; see TASKS.md #20. Running with `--no-daemon` gives the forked script a
+ * real controlling terminal to probe via `/dev/tty` (see download-models.sh — same
+ * technique prune-branches.sh already uses), so the picker prompt works; no stdin wiring
+ * needed here since the script reads the answer from /dev/tty directly, not fd 0. The
+ * `models:pick` npm script (and `scripts/download-models-interactive.sh`) bake the
+ * `--no-daemon` flag in so you don't have to remember it. Running `scripts/download-
+ * models.sh` directly (no Gradle at all) also works and is faster — this exists for
+ * discoverability via `./gradlew tasks --group game` and so the interactive path is
+ * reachable without knowing the script exists.
  */
 abstract class DownloadModels : DefaultTask() {
 
