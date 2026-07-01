@@ -12,17 +12,15 @@ import javax.inject.Inject
  * Models are stored in design/aircraft-reference/models/ (ignored by git).
  * Usage: ./gradlew downloadModels [--model=number|short-name|full-name|--all]
  *
- * The Gradle *daemon* has no controlling terminal, so a normal (daemon-backed) invocation
- * can only list models when run without --model (no interactive prompt) — same split as
- * pruneBranches; see TASKS.md #20. Running with `--no-daemon` gives the forked script a
- * real controlling terminal to probe via `/dev/tty` (see download-models.sh — same
- * technique prune-branches.sh already uses), so the picker prompt works; no stdin wiring
- * needed here since the script reads the answer from /dev/tty directly, not fd 0. The
- * `models:pick` npm script (and `scripts/download-models-interactive.sh`) bake the
- * `--no-daemon` flag in so you don't have to remember it. Running `scripts/download-
- * models.sh` directly (no Gradle at all) also works and is faster — this exists for
- * discoverability via `./gradlew tasks --group game` and so the interactive path is
- * reachable without knowing the script exists.
+ * Task execution always happens inside a forked "Gradle build daemon" JVM — even with
+ * `--no-daemon` (which only controls whether that daemon is *kept alive for reuse*, not
+ * whether one is forked at all; confirmed via `--info`: Gradle 8 always launches a daemon
+ * process with its own baked-in `--add-opens`/`--add-exports` flags that a bootstrap `java`
+ * invocation could never organically match). That daemon process is detached from the
+ * controlling terminal, so **no combination of flags gets this task an interactive
+ * prompt** — this isn't a project-specific limitation (the JDK 21 pin below), it's
+ * inherent to Gradle's architecture. Run `scripts/download-models.sh` directly (no Gradle
+ * at all) for the interactive "enter a number" picker.
  */
 abstract class DownloadModels : DefaultTask() {
 

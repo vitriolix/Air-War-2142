@@ -32,7 +32,6 @@
     "docs:api": "./gradlew renderApiDocs",
     "git:tidy": "./gradlew tidyGit",
     "branches:prune": "scripts/prune-branches.sh",
-    "models:pick": "scripts/download-models-interactive.sh",
     "kill:servers": "./gradlew killServers",
     "pr:create": "./gradlew createPr",
     "pr:open": "./gradlew openPr",
