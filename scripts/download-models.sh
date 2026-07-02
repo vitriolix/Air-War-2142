@@ -16,11 +16,17 @@ MODELS=(
   "71667f7f8f2b4991880cdbb21378f46b:P-51D Mustang:P-51D"
   "109ef10964dc404089507fc33aad2982:Messerschmitt Bf-109:Bf-109"
   "9fd7912fde0941dda60a584ae3813d3c:Supermarine Spitfire Mk XIV:Spitfire"
+  "7eab500310604fd996b116f9cd7520a7:Lockheed P-38 Lightning:P-38"
+  "30002b04d490465b90c7ecbfe01e0f52:Republic P-47 Thunderbolt:P-47"
+  "8bb0a00e65b741fe83aefe12cfe733f3:Messerschmitt Me-262:Me-262"
   # Bombers
   "927f07f6ddcf470ab0387ce5829024d5:Boeing B-17 Flying Fortress:B-17"
   "fb5cdf7c77124dcc9f06f29ed833fa5c:North American B-25 Mitchell:B-25"
   "a173584ff087441098322ce242b7e9a1:Heinkel He-111:He-111"
   "9d7456f25298471aa7b736f2e1c3ffd9:Junkers Ju-88:Ju-88"
+  # Modern/Novelty
+  "1850c7bb7ac54902bd9868381ff8b652:Lockheed SR-71 Blackbird:SR-71"
+  "757581776f56449c939cb0a72683dce2:Lockheed F-117 Nighthawk:F-117"
 )
 
 download_model() {
@@ -54,21 +60,47 @@ list_models() {
   echo "Download all: ./scripts/download-models.sh all"
 }
 
-# Resolve $1 against MODELS by index, sketchfab id, short name (exact,
-# case-insensitive), or full-name substring (case-insensitive).
-# Echoes "id:name" on match.
+# Resolve $1 against MODELS by index, sketchfab id, short name (exact, case-insensitive), or
+# full-name substring (case-insensitive). Echoes "id:name" on match.
+#
+# Checked as PRIORITY TIERS across the whole list, not per-entry-in-array-order — checking
+# all 4 match types for entry 1, then all 4 for entry 2, etc. lets a low-priority match on an
+# EARLIER entry beat a high-priority match on a LATER one. Real case this hit: querying "5"
+# (meaning index 5, Spitfire) matched entry 3's full-name substring check instead ("P-51D
+# Mustang" contains "5", from "51") because entry 3 comes before entry 5 in the array — the
+# loop returned that wrong match before ever reaching Spitfire's exact index. A numeric query
+# is unambiguous (the user typed a number, they mean an index) so it's its own tier and never
+# falls through to name matching at all.
 resolve_model() {
-  local query="$1" i=1
+  local query="$1" i model id name short
+  # An empty query must never match — `*""*` is a no-op glob that matches every string,
+  # so without this guard an empty $query would silently "resolve" to model #1.
+  [[ -z "$query" ]] && return 1
+
+  if [[ "$query" =~ ^[0-9]+$ ]]; then
+    i=1
+    for model in "${MODELS[@]}"; do
+      if [[ "$i" == "$query" ]]; then
+        IFS=':' read -r id name short <<< "$model"
+        echo "$id:$name"
+        return 0
+      fi
+      ((i++))
+    done
+    return 1
+  fi
+
   for model in "${MODELS[@]}"; do
     IFS=':' read -r id name short <<< "$model"
-    if [[ "$query" == "$i" ]] \
-      || [[ "$query" == "$id" ]] \
-      || [[ "${query,,}" == "${short,,}" ]] \
-      || [[ "${name,,}" == *"${query,,}"* ]]; then
-      echo "$id:$name"
-      return 0
-    fi
-    ((i++))
+    [[ "$query" == "$id" ]] && { echo "$id:$name"; return 0; }
+  done
+  for model in "${MODELS[@]}"; do
+    IFS=':' read -r id name short <<< "$model"
+    [[ "${query,,}" == "${short,,}" ]] && { echo "$id:$name"; return 0; }
+  done
+  for model in "${MODELS[@]}"; do
+    IFS=':' read -r id name short <<< "$model"
+    [[ "${name,,}" == *"${query,,}"* ]] && { echo "$id:$name"; return 0; }
   done
   return 1
 }
