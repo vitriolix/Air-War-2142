@@ -621,7 +621,9 @@ class GameEngine(
             }
             collidingEnemies.forEach { enemy ->
                 if (enemy.type != EnemyType.BOSS && enemy.type != EnemyType.HEAVY_FIGHTER) {
-                    destroyEnemy(enemy)
+                    // A crash, not a kill -- the player didn't shoot this down, it flew into
+                    // them. Still destroy it (explosion/cleanup), just don't credit score/kills.
+                    destroyEnemy(enemy, creditKill = false)
                 }
                 damagePlayer(1)
             }
@@ -646,12 +648,14 @@ class GameEngine(
                kotlin.math.abs(y1 - y2) < (h1 + h2) / 2f
     }
 
-    private fun destroyEnemy(enemy: Enemy) {
+    private fun destroyEnemy(enemy: Enemy, creditKill: Boolean = true) {
         enemies.remove(enemy)
-        kills++
-        val p = _player.value.copy()
-        p.score += enemy.type.scoreValue
-        _player.value = p
+        if (creditKill) {
+            kills++
+            val p = _player.value.copy()
+            p.score += enemy.type.scoreValue
+            _player.value = p
+        }
 
         // Squadron tracking logic
         if (enemy.type == EnemyType.SQUADRON_RED) {
