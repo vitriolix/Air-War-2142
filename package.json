@@ -2,7 +2,7 @@
   "name": "airwar2142-tooling",
   "version": "1.0.0",
   "private": true,
-  "description": "Thin npm shim over the Gradle task surface. Canonical commands live in build.gradle.kts; these just call ./gradlew. Prefer `./gradlew <task>`.",
+  "description": "Consistent entry point over the project's task surface (Gradle tasks in build.gradle.kts + scripts/*.sh alike). Prefer `npm run <alias>`.",
   "scripts": {
     "play:jvm": "./gradlew playJvm",
     "play:web": "./gradlew playWeb",
@@ -32,6 +32,7 @@
     "docs:api": "./gradlew renderApiDocs",
     "git:tidy": "./gradlew tidyGit",
     "branches:prune": "scripts/prune-branches.sh",
+    "models:pick": "scripts/download-models-interactive.sh",
     "kill:servers": "./gradlew killServers",
     "pr:create": "./gradlew createPr",
     "pr:open": "./gradlew openPr",

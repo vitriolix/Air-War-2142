@@ -30,5 +30,7 @@
 - **Architecture:** plugin/ECS re-architecture — decisions in the `plugin-architecture`
   memory and `docs/0001`. Read before touching engine/render code.
 - **README:** task reference, build notes, and the full workarounds list.
-- **Build:** JDK 21 required (KorGE 6). Commands are Gradle tasks in the `game` group
-  (`./gradlew tasks --group game`); npm scripts are thin shims.
+- **Build:** JDK 21 required (KorGE 6). **Prefer `npm run <alias>`** — the consistent entry
+  point regardless of what's underneath (Gradle task in the `game` group, or a plain
+  `scripts/*.sh`); see `scripts/README.md`. `./gradlew tasks --group game` lists the
+  underlying tasks.
