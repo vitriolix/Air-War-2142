@@ -12,8 +12,6 @@ This directory contains (or will contain) production-ready 3D aircraft models so
 
 ### Using the Gradle Task
 
-Sketchfab requires manual download for free models (no direct API access for authenticated downloads). A Gradle task provides a helper interface:
-
 ```bash
 # List available models
 ./gradlew downloadModels
@@ -27,18 +25,44 @@ Sketchfab requires manual download for free models (no direct API access for aut
 ./gradlew downloadModels --all
 ```
 
-Each model will provide instructions on where to save the downloaded `.glb` file.
+**Automated, once set up (one-time, optional):** Sketchfab's Download API lets us fetch
+models automatically instead of clicking through their site, but it needs an OAuth2 app —
+there's no simple static API key. The first time you pick a model with no Sketchfab app
+configured yet, the picker (needs the interactive path below) walks you through it:
 
-### Interactive Picker (run directly)
+1. Visit https://sketchfab.com/developers/apps (log in first) and create an app.
+2. Its **Redirect URI** must be exactly `http://127.0.0.1:8737/callback`.
+3. Copy the app's **Client ID** and **Client Secret** when prompted — saved to
+   `local.properties` (gitignored, never committed), alongside the refresh token from the
+   one-time browser consent click that follows. Your Sketchfab password is never seen by
+   this script — the browser handles login/consent directly with Sketchfab.
 
-`./gradlew downloadModels` can't prompt — task execution always happens in a
-forked, terminal-detached Gradle daemon process, even with `--no-daemon`
-(same limitation as `pruneBranches`; see `TASKS.md` #20 — this is inherent to
-Gradle's architecture, not fixable via flags). For an interactive "enter a
-number" picker, run the script directly instead:
+After that one-time setup, downloads are fully automatic (silently refreshes the access
+token from the stored refresh token — no more prompts) — even via a plain
+`./gradlew downloadModels --model=...` with no interactive picker needed. The API returns
+glTF (a ZIP of `scene.gltf` + `scene.bin` + textures, unpacked into the model's folder for
+you) or USDZ — never a `.glb` — Blender's glTF importer handles the unpacked form exactly
+the same. Only `.gltf`/`.usdz` are available via the API; source formats (FBX/OBJ/Blend/
+Maya) are manual-download-only regardless.
+
+**Without that setup** (or if it fails), each model instead prints manual instructions —
+the exact URL, and where to save whatever you download by hand (GLB recommended there).
+
+### Interactive Picker
+
+A plain `./gradlew downloadModels` can't prompt — task execution always runs
+in a forked, terminal-detached Gradle daemon (same limitation as
+`pruneBranches`; see `TASKS.md` #20). Two ways to get the "enter a number"
+picker:
 
 ```bash
+# Fastest — skips Gradle/JVM startup entirely:
 ./scripts/download-models.sh
+
+# Via the Gradle task surface instead — explicitly forwards this terminal's
+# input through Gradle's client<->daemon protocol:
+npm run models:pick
+# equivalent to: ./gradlew downloadModels --no-daemon --console=plain --force-prompt
 ```
 
 ### Manual Download (Alternative)

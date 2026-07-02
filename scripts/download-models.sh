@@ -5,6 +5,7 @@
 # (i.e. run this DIRECTLY); `./gradlew downloadModels` has no controlling terminal
 # (Gradle daemon), so it just lists models instead — same split as pruneBranches.
 source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/_sketchfab_auth.sh"
 
 MODELS_DIR="design/aircraft-reference/models"
 
@@ -35,15 +36,23 @@ download_model() {
 
   echo "📥 Downloading: $model_name"
   echo "   Model ID: $model_id"
-  echo "   Visit: https://sketchfab.com/3d-models/$model_id to download manually"
+
+  if sketchfab_download_model "$model_id" "$save_dir"; then
+    echo ""
+    return 0
+  fi
+
+  local manual_url="https://sketchfab.com/3d-models/$model_id"
+  echo "   Visit: $manual_url to download manually"
   echo ""
-  echo "   Note: Sketchfab requires manual download for free models."
+  echo "   Note: automated download isn't set up (or failed) for this model."
   echo "   Steps:"
-  echo "   1. Visit the URL above"
+  echo "   1. Visit the URL above (opening it now if possible)"
   echo "   2. Click 'Download'"
   echo "   3. Choose format (GLB recommended for game engines)"
   echo "   4. Save to: $save_dir"
   echo ""
+  open_url "$manual_url" || true
 }
 
 list_models() {
