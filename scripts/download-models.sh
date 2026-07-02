@@ -80,25 +80,26 @@ echo ""
 selection="${1:-}"
 
 if [[ -z "$selection" ]]; then
-  # Can we prompt? Probe for a controlling terminal directly via /dev/tty (same technique
-  # as prune-branches.sh) instead of `[ -t 0 ]` — stdin may be re-piped by whatever invoked
-  # us (e.g. Gradle's Exec forwards System.in through a pipe, not a raw tty-fd inheritance),
-  # so `-t 0` would read false even when a real terminal is available. /dev/tty resolves to
-  # the process's actual controlling terminal regardless of stdin/stdout redirection, and
-  # reading the answer from /dev/tty directly sidesteps Gradle's stdio plumbing entirely —
-  # this is what makes `./gradlew downloadModels --no-daemon` (scripts/download-models-
-  # interactive.sh / `npm run models:pick`) interactive: no daemon = a real controlling
-  # terminal exists; the Gradle daemon has none, so this probe correctly degrades to
-  # list-only there.
-  if { : >/dev/tty; } 2>/dev/null; then
+  # can_prompt (see _common.sh) covers both: run directly (real /dev/tty) or run via
+  # `./gradlew downloadModels --no-daemon --console=plain --force-prompt`
+  # (scripts/download-models-interactive.sh / `npm run models:pick`), where
+  # AIR_WAR_2142_FORCE_PROMPT=1 signals that DownloadModels.kt forwarded this terminal's real
+  # input through Gradle's client<->daemon protocol (the Gradle build daemon itself has no
+  # OS-level controlling terminal, --no-daemon or not, so /dev/tty alone would never
+  # detect that path).
+  if can_prompt; then
     list_models
     echo ""
-    read -r -p "Enter a number (or 'all'): " selection </dev/tty
+    selection="$(prompt_line "Enter a number (or 'all'):")"
     echo ""
   else
     list_models
     exit 0
   fi
+  # Prompted but got nothing back (e.g. --force-prompt was set but stdin wasn't actually a
+  # real terminal after all — closed/EOF). Already showed the list; don't fall through to
+  # resolve_model with an empty selection.
+  [[ -z "$selection" ]] && exit 0
 fi
 
 if [[ "$selection" == "all" ]]; then

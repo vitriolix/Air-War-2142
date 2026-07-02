@@ -12,15 +12,19 @@ import javax.inject.Inject
  * Models are stored in design/aircraft-reference/models/ (ignored by git).
  * Usage: ./gradlew downloadModels [--model=number|short-name|full-name|--all]
  *
- * Task execution always happens inside a forked "Gradle build daemon" JVM — even with
- * `--no-daemon` (which only controls whether that daemon is *kept alive for reuse*, not
- * whether one is forked at all; confirmed via `--info`: Gradle 8 always launches a daemon
- * process with its own baked-in `--add-opens`/`--add-exports` flags that a bootstrap `java`
- * invocation could never organically match). That daemon process is detached from the
- * controlling terminal, so **no combination of flags gets this task an interactive
- * prompt** — this isn't a project-specific limitation (the JDK 21 pin below), it's
- * inherent to Gradle's architecture. Run `scripts/download-models.sh` directly (no Gradle
- * at all) for the interactive "enter a number" picker.
+ * Task execution always happens inside a forked "Gradle build daemon" JVM (even with
+ * `--no-daemon`, which only controls whether that daemon is *kept alive for reuse*, not
+ * whether one is forked at all), and that daemon has no OS-level controlling terminal —
+ * so `/dev/tty`-based detection inside a forked script never works here, no matter the
+ * flags. BUT Gradle's client↔daemon protocol *can* forward the real keystrokes typed at
+ * the launching terminal: wiring `standardInput = System.\`in\`` below pipes whatever the
+ * client forwards into the script's stdin. That forwarding isn't auto-detected reliably
+ * from inside a daemon-executed task (no real console to probe), so it's opt-in via
+ * `--force-prompt`, set only by the dedicated wrapper (`scripts/download-models-
+ * interactive.sh` / `npm run models:pick`) — a human running that wrapper is presumed to
+ * be at a real terminal. Plain `./gradlew downloadModels` (no `--force-prompt`) is
+ * untouched: always safe, lists and exits, never blocks waiting for input that isn't
+ * coming (CI-safe).
  */
 abstract class DownloadModels : DefaultTask() {
 
@@ -34,6 +38,11 @@ abstract class DownloadModels : DefaultTask() {
     @get:Optional
     abstract val all: Property<Boolean>
 
+    @get:Option(option = "force-prompt", description = "Forward this terminal's stdin to the picker so it can prompt (only meaningful with --no-daemon --console=plain; see scripts/download-models-interactive.sh).")
+    @get:Input
+    @get:Optional
+    abstract val forcePrompt: Property<Boolean>
+
     @get:Inject
     abstract val exec: ExecOperations
 
@@ -43,6 +52,7 @@ abstract class DownloadModels : DefaultTask() {
     fun download() {
         val modelName = model.orNull?.takeIf { it.isNotBlank() }
         val downloadAll = all.orNull == true
+        val prompting = forcePrompt.orNull == true
 
         // Check if script exists
         if (!java.io.File(scriptPath).exists()) {
@@ -54,7 +64,7 @@ abstract class DownloadModels : DefaultTask() {
         when {
             downloadAll -> cmd.add("all")
             modelName != null -> cmd.add(modelName)
-            // else: list available models (no arg)
+            // else: list available models (no arg) — or prompt, if forcePrompt forwards stdin
         }
 
         println("📥 Running: ${cmd.joinToString(" ")}")
@@ -62,6 +72,10 @@ abstract class DownloadModels : DefaultTask() {
 
         exec.exec {
             commandLine(cmd)
+            if (prompting) {
+                standardInput = System.`in`
+                environment("AIR_WAR_2142_FORCE_PROMPT", "1")
+            }
         }
     }
 }

@@ -1,15 +1,29 @@
 # Project task commands
 
-The canonical commands are **Gradle tasks** (group `game`): run `./gradlew <task>`.
-A thin **npm shim** mirrors them (`npm run <alias>` just calls `./gradlew <task>`), and the
-shell-heavy ones are implemented by the `scripts/*.sh` files that the Gradle tasks wrap.
+**Prefer `npm run <alias>`** — it's the one consistent entry point regardless of what's
+underneath (a plain `scripts/*.sh` run directly, or a Gradle task). Some tasks genuinely
+need that distinction — e.g. `models:pick` runs `./gradlew` with extra flags
+(`--no-daemon --console=plain --force-prompt`) so it can actually prompt interactively,
+which a bare `./gradlew downloadModels` can never do (the Gradle build daemon has no
+controlling terminal — see the `tooling-gradle-native-wip` memory). `./gradlew <task>`
+directly still works and is fine for scripting/CI, but isn't the primary documented path.
 
 ```
-./gradlew tasks --group game     # list everything
+npm run                          # list every script name (npm's native equivalent of
+                                  # `./gradlew tasks` — no descriptions, just names; see the
+                                  # tables below for what each does)
+./gradlew tasks --group game     # list the underlying Gradle tasks, with descriptions
 ```
 
 > Gradle runs via `./gradlew`, pinned to JDK 21 in `gradle.properties` (KorGE 6 needs JDK 21+),
 > so you don't need to set `JAVA_HOME`.
+
+**Naming convention** (two deliberate sub-patterns, not an inconsistency): **`domain:action`**
+for multi-step workflows, so related steps sort/discover together — `release:branch`,
+`release:tag`, `release:test`, `design:export`, `branches:prune`, `models:pick`. **`verb:target`**
+for one action applied across platforms — `play:jvm`, `play:web`, `test:android`. When adding a
+new script, ask: is this one of several related steps in a workflow (domain:action), or the
+same verb repeated per-platform (verb:target)?
 
 ## Launch / play
 | Gradle | npm shim | What |
@@ -37,7 +51,8 @@ shell-heavy ones are implemented by the `scripts/*.sh` files that the Gradle tas
 | `./gradlew webConsole` | `npm run web:console` | Boot the web build and stream its **browser** console + errors to the terminal (the web app is client-side; its logs live in the browser). For Wasm/headed: `scripts/web-console.sh wasm --headed`. Ctrl-C stops it. |
 | `./gradlew tidyGit` | `npm run git:tidy` | Clean working tree + branch/push status. |
 | `scripts/prune-branches.sh` | `npm run branches:prune` | Delete local branches whose upstream is gone **and** merged (ancestor of base or a merged PR — covers squash-merges). For **unmerged** branches it prompts keep/delete/log — so run it **directly** (or via the npm shim) for that prompt. `./gradlew pruneBranches` also works but **can't prompt** (the Gradle daemon has no TTY) → it cleans merged branches and keeps unmerged. `--dry-run` to preview. |
-| `scripts/download-models.sh` | — | Sketchfab 3D aircraft model downloader (`design/aircraft-reference/models/`, dev-box-only). Run it **directly** with no args for an interactive "enter a number" picker. `./gradlew downloadModels --model=<number\|short-name\|full-name>` / `--all` also work but **can't prompt** — task execution always runs in a forked, terminal-detached Gradle daemon, even with `--no-daemon` (confirmed via `--info`; not fixable via flags) → lists models when no `--model` given. |
+| `scripts/download-models.sh` | — | Sketchfab 3D aircraft model downloader (`design/aircraft-reference/models/`, dev-box-only). Run it **directly** with no args for an interactive "enter a number" picker. Plain `./gradlew downloadModels --model=<number\|short-name\|full-name>` / `--all` also work but **can't prompt** on their own (the Gradle build daemon has no controlling terminal) → lists models when no `--model` given. |
+| `scripts/download-models-interactive.sh` | `npm run models:pick` | Runs `downloadModels` via `./gradlew --no-daemon --console=plain --force-prompt`, which explicitly forwards this terminal's input through Gradle's client\<->daemon protocol so the picker can prompt (slower startup than running `download-models.sh` directly — no daemon reuse). |
 | `./gradlew killServers` | `npm run kill:servers` | Stop JS/Wasm dev servers + `runJvm`. |
 | `./gradlew createPr` | `npm run pr:create` | Push branch + open a GitHub PR. For custom flags use the script directly: `scripts/create-pr.sh --draft`. |
 
