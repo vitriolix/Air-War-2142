@@ -11,6 +11,38 @@ Newest entries on top. Each thread/follow-up carries a **Status**:
 
 ---
 
+## 004 — Interactive Gradle tasks + Sketchfab automated download (retrospective)
+
+**Date:** 2026-07-01 to 2026-07-02 · **Overall status:** `Done` (both landed as code — see PRs #46–#48 — but logged here retroactively since the amount of real investigation involved was worth preserving verbatim, not just as a compacted memory summary; see the info-storage-flow follow-up task in `TASKS.md`).
+
+### Prompt (paraphrased across the session — not literal, since this wasn't flagged as investigation-only up front)
+
+> Can a Gradle task ever be made truly interactive (read real terminal input)? And separately: can we automate Sketchfab model downloads instead of manual click-through, and if so, how (API key vs OAuth, what grant type, what does the token lifecycle look like)?
+
+### Findings — Gradle daemon architecture
+
+**Verdict: task execution always happens inside a forked, terminal-detached "Gradle build daemon" JVM — confirmed via `--info`, not documented prominently anywhere obvious.** `--no-daemon` does not mean "run in-process" — it only controls whether that daemon is *kept alive for reuse* afterward. A fresh daemon is still forked to actually execute the task, with Gradle-internal `--add-opens`/`--add-exports` JVM flags a bootstrap `java` invocation could never organically match (visible in `--info` output as `Starting process 'Gradle build daemon'...`). That daemon has no OS-level controlling terminal, so `/dev/tty`-probing inside a task's `Exec`'d subprocess can never detect a real terminal — tried matching `JAVA_HOME` and `org.gradle.jvmargs` to the invoking JVM to dodge the fork entirely; still forked both times.
+
+**What does work:** Gradle's client↔daemon protocol can forward the launching terminal's real keystrokes if a task explicitly wires `standardInput = System.`in`` on its `ExecSpec` — confirmed end-to-end against a real terminal. Paired with `--console=plain` (stops the rich-UI redraws from interleaving with/hiding a subprocess's own prompt output) and `--no-daemon` (avoids leaving a stale persistent daemon around). Not auto-detectable from inside a daemon-executed task (no reliable signal), so it has to be an explicit opt-in flag (`--force-prompt`) set only by a dedicated wrapper script — never the task's default behavior, to keep the plain invocation CI-safe.
+
+Two real bugs surfaced getting this to actually work, both general bash/shell gotchas beyond this specific feature:
+1. A helper function invoked via `x="$(fn)"` (command substitution) only exposes **stdout** as the "return value" — any status/prompt text the function prints to stdout gets silently absorbed into that captured value instead of ever reaching the screen. Fixed by routing all status/prompt output to stderr.
+2. Command substitution also forks a **subshell** — any variable a function sets internally (not just what it prints) is invisible to the caller once that subshell exits. Under this repo's `set -u`, reading one of those vars back in the caller crashes with "unbound variable." Fixed by having such functions set global variables directly and calling them as plain statements instead of via `$(...)`.
+
+### Findings — Sketchfab Download API / OAuth2
+
+**Verdict: no static personal API key works for the Download API specifically — confirmed empirically (`{"detail":"Invalid API token"}` when trying the account Settings→Password API token).** The Download API (an extension of Sketchfab's Data API) requires a Bearer OAuth2 access token. Of Sketchfab's three grant types — Authorization Code, Implicit, Resource Owner Password Credentials — chose Authorization Code: one-time browser consent click, the app's password never touches the script (Sketchfab's own docs flag Password Credentials as "less secure"). Implicit was ruled out because it has no refresh token (would need re-auth on every single token expiry, bad for unattended automation).
+
+Sketchfab removed their self-service OAuth-app-registration dashboard at some point — registering an app is now a support-request process with exactly 4 fields (Application name, Grant type, Redirect URI, Username), documented at `sketchfab.com/developers/oauth#registering-your-app`. Verified the real request/response shapes empirically against the live API (not just docs, which were sometimes JS-rendered/unreadable via fetch): the token-exchange endpoint returns `invalid_grant` (not `invalid_client`) when the `client_id`/`client_secret` are valid but the authorization `code` isn't — a useful diagnostic that doesn't require completing the full browser flow. The Download API itself only ever returns glTF (as a ZIP: `scene.gltf` + `scene.bin` + textures) or USDZ — never `.glb` or original source formats (FBX/OBJ/Blend/Maya), confirmed both via docs and by inspecting a real downloaded archive's contents.
+
+Access tokens last 1 month; the Authorization Code grant's refresh token renews them silently (verified: a second run reused the cached refresh token with zero browser interaction). If a refresh token itself goes dead (revoked/expired), the fix is to clear it and re-run the browser consent once — not documented explicitly by Sketchfab, inferred from OAuth2 conventions and confirmed working in practice.
+
+### Why this is logged here despite not being flagged investigation-only up front
+
+Per `feedback-log-investigations` memory, this file is meant for investigation-only (no-code-change) sessions — this one had extensive real code changes too. Logging it anyway because the debugging/research volume was substantial enough that losing the verbatim detail to memory summarization felt like a real cost — see the open follow-up task in `TASKS.md` to revisit where this boundary should actually sit.
+
+---
+
 ## 003 — Claude Desktop ↔ Blender MCP Integration (Intel Mac / Blender 4.5)
 
 **Date:** 2026-06-29 · **Overall status:** `Done` (full stack validated).
